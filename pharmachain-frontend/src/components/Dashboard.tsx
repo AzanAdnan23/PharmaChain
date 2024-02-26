@@ -22,15 +22,20 @@ export default function Dashboard() {
             </div>
             {/* dash container */}
             <div className="flex flex-row justify-between">
-                {/* role selector */}
-                <div className="rounded-md border border-black mx-4 flex flex-col h-[85vh] bg-gray-100">
-                    <div className="rounded-tr-md rounded-tl-md mb-2 bg-black text-white text-center font-mono border-2 border-black">Roles</div>
-                    <div className="text-center mx-5 my-3 rounded-md text-white bg-black py-2 px-5 font-mono">Manufacturer</div>
-                    <div className="hover:bg-black hover:text-white transition transition-200 border border-black text-center mx-5 my-3 rounded-md text-black bg-white py-2 px-5 font-mono">Distributor</div>
-                    <div className="hover:bg-black hover:text-white transition transition-200 border border-black text-center mx-5 my-3 rounded-md text-black bg-white py-2 px-5 font-mono">Retailer</div>
+                {/* roles and wallet info */}
+                <div className="flex flex-col justify between">
+                    <div className="mb-10 rounded-md border mx-4 flex flex-col min-h-content bg-gray-100">
+                        <div className="rounded-tr-md rounded-tl-md mb-2 bg-black text-white text-center font-mono border-2 border-black">Roles</div>
+                        <div className="text-center mx-5 my-3 rounded-md text-white bg-black py-2 px-5 font-mono">Manufacturer</div>
+                        <div className="hover:bg-black hover:text-white transition transition-200 border border-black text-center mx-5 my-3 rounded-md text-black bg-white py-2 px-5 font-mono">Distributor</div>
+                        <div className="hover:bg-black hover:text-white transition transition-200 border border-black text-center mx-5 my-3 rounded-md text-black bg-white py-2 px-5 font-mono">Retailer</div>
+                    </div>
+                    <div className="mx-4 bg-gray-100 flex flex-col flex-grow">
+                        <div className="rounded-tr-md rounded-tl-md mb-2 bg-black text-white text-center font-mono border-2 border-black">Wallet Info</div>
+                    </div>
                 </div>
                 {/* current orders */}
-                <div className="rounded-md border border-black mx-4 w-2/3 bg-gray-100 h-[85vh]">
+                <div className="rounded-md mx-4 w-2/3 bg-gray-100 h-[85vh]">
                     <div className="rounded-tr-md rounded-tl-md bg-black text-white text-center font-mono border-2 border-black">Current Orders</div>
                     <div className="p-5 overflow-scroll h-[80vh]">
                         <div className="mb-5 rounded-md p-3 flex flex-row items-center justify-between bg-white shadow-sm">
@@ -157,16 +162,16 @@ export default function Dashboard() {
                 </div>
                 {/* batch section */}
                 <div className="flex flex-col mx-4 w-1/4">
-                    <div className="rounded-md border border-black bg-gray-100 min-h-min mb-5">
+                    <div className="rounded-md bg-gray-100 min-h-min mb-5">
                         <div className="rounded-tr-md rounded-tl-md mb-2 bg-black text-white text-center font-mono border-2 border-black">Create Batch</div>
                         <div className="flex flex-col p-5">
-                            <input placeholder="Batch ID" className="rounded-sm mb-4 p-2 bg-white border-black border" type="text" name="" id="" />
-                            <input placeholder="Location" className="rounded-sm mb-4 p-2 bg-white border-black border" type="text" name="" id="" />
-                            <input placeholder="Quantity" className="rounded-sm mb-4 p-2 bg-white border-black border" type="text" name="" id="" />
+                            <input placeholder="Batch ID" className="font-mono rounded-sm mb-4 p-2 bg-white border-black border" type="text" name="" id="" />
+                            <input placeholder="Location" className="font-mono rounded-sm mb-4 p-2 bg-white border-black border" type="text" name="" id="" />
+                            <input placeholder="Quantity" className="font-mono rounded-sm mb-4 p-2 bg-white border-black border" type="text" name="" id="" />
                             <button className="transition transition-200 rounded-md bg-black shadow-lg text-white border border-black py-1 mt-3">Submit</button>
                         </div>
                     </div>
-                    <div className="rounded-md border border-black bg-gray-100 flex-grow">
+                    <div className="rounded-md bg-gray-100 flex-grow">
                         <div className="rounded-tr-md rounded-tl-md bg-black text-white text-center font-mono border-2 border-black">Current Batches</div>
                         <div className="flex flex-col p-2">
                             <div className="rounded-sm p-2 mb-2 bg-white shadow-sm flex flex-row">
