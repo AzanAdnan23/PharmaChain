@@ -1,33 +1,37 @@
 {
-  "name": "frontend",
+  "name": "embedded-accounts-quickstart",
+  "version": "0.1.0",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
-    "@alchemy/aa-accounts": "^3.18.2",
-    "@alchemy/aa-alchemy": "^3.18.2",
-    "@alchemy/aa-core": "^3.18.2",
-    "dotenv": "^16.4.5",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "viem": "^2.17.3"
+    "@alchemy/aa-accounts": "3.14.1",
+    "@alchemy/aa-alchemy": "3.14.1",
+    "@alchemy/aa-core": "3.12.3",
+    "@tanstack/react-query": "5.28.9",
+    "classnames": "^2.5.1",
+    "next": "14.1.4",
+    "next-themes": "^0.3.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "viem": "2.8.6"
   },
   "devDependencies": {
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
-    "@typescript-eslint/eslint-plugin": "^7.13.1",
-    "@typescript-eslint/parser": "^7.13.1",
-    "@vitejs/plugin-react-swc": "^3.5.0",
-    "eslint": "^8.57.0",
-    "eslint-plugin-react-hooks": "^4.6.2",
-    "eslint-plugin-react-refresh": "^0.4.7",
-    "typescript": "^5.2.2",
-    "vite": "^5.3.1"
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.1.4",
+    "postcss": "^8",
+    "prettier": "^3.2.5",
+    "prettier-plugin-tailwindcss": "^0.5.13",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5",
+    "vercel": "^34.2.3"
   }
 }

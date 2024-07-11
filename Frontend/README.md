@@ -1,30 +1,9 @@
-# React + TypeScript + Vite
+# Alchemy Embedded Accounts Quick Start App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a simple Next.js single page application where users can sign up with email using the Alchemy Signer, silently deploy a Modular Account onchain, and send UserOperations (UOs) with zero gas.
 
-Currently, two official plugins are available:
+It leverages Alchemy Embedded Accounts using [Account Kit](https://accountkit.alchemy.com/) and the [Alchemy Signer](https://accountkit.alchemy.com/packages/aa-alchemy/signer/overview.html), [Modular Smart Contract Account](https://github.com/alchemyplatform/modular-account), [Rundler](https://github.com/alchemyplatform/rundler) and [Gas Manager](https://docs.alchemy.com/docs/gas-manager-services).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Getting Started
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
-
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+The run this app, you can get started in [Alchemy's Account Kit docs](https://accountkit.alchemy.com/getting-started/run-locally).
