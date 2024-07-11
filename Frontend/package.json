@@ -10,8 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@alchemy/aa-accounts": "^3.18.2",
+    "@alchemy/aa-alchemy": "^3.18.2",
+    "@alchemy/aa-core": "^3.18.2",
+    "dotenv": "^16.4.5",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "viem": "^2.17.3"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
