@@ -5,6 +5,7 @@ import { ProfileCard } from "@/components/profile-card";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import ThemeSwitch from "@/components/ui/theme-switch";
 import { useSignerStatus } from "@alchemy/aa-alchemy/react";
+import { Button } from "@radix-ui/themes";
 
 // [!region using-status]
 export default function Home() {
@@ -27,6 +28,7 @@ export default function Home() {
         <LogInCard />
       )}
       <ThemeSwitch />
+      <Button>Hello Radix!</Button>
     </main>
   );
 }
