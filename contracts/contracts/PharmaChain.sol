@@ -4,11 +4,7 @@ pragma solidity ^0.8.24;
 import "hardhat/console.sol";
 
 contract PharmaChain {
-    // will check from this agr user ha then authenticate. if not then create a new account wali screen
     // mapping(address => bool) users;
-
-    // main/master manufacturer accounts
-    // sub accounts for manufacturers
 
     enum Role {
         Manufacturer,
@@ -30,7 +26,7 @@ contract PharmaChain {
         bool qualityApproved;
         address distributor;
     }
-
+    // will check from this agr user ha then authenticate. if not then create a new account wali screen
     mapping(address => User) public users;
     mapping(uint256 => Batch) public batches;
 
