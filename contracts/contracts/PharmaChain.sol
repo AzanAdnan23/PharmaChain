@@ -266,7 +266,7 @@ contract PharmaChain {
         emit RFIDVerified(_batchId, msg.sender, verified);
     }
 
-    function scanRFID(uint256 _batchId) external {
+    function scanRFID(uint256 _batchId) external view {
         Batch storage batch = batches[_batchId];
         require(
             msg.sender == batch.manufacturer ||
