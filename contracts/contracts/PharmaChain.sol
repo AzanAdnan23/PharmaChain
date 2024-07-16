@@ -4,8 +4,6 @@ pragma solidity ^0.8.24;
 import "hardhat/console.sol";
 
 contract PharmaChain {
-    address public owner;
-
     enum Role {
         Manufacturer,
         Distributor,
@@ -30,15 +28,23 @@ contract PharmaChain {
         string details;
         bool qualityApproved;
         address distributor;
-        address provider;
         bytes32 rfidUIDHash;
         bool isRecalled;
     }
 
+    struct BatchUnit {
+        uint256 unitId;
+        uint256 batchId;
+        address provider;
+        bool isAssigned;
+    }
+
     mapping(address => User) public users;
     mapping(uint256 => Batch) public batches;
+    mapping(uint256 => BatchUnit) public batchUnits;
 
     uint256 public nextBatchId;
+    uint256 public nextUnitId;
 
     event UserRegistered(
         address indexed user,
@@ -63,8 +69,8 @@ contract PharmaChain {
         uint256 indexed batchId,
         address indexed distributor
     );
-    event BatchAssignedToProvider(
-        uint256 indexed batchId,
+    event BatchUnitAssignedToProvider(
+        uint256 indexed unitId,
         address indexed provider
     );
     event RFIDVerified(
@@ -82,11 +88,6 @@ contract PharmaChain {
         address indexed distributor,
         string details
     );
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner can perform this action");
-        _;
-    }
 
     modifier onlyManufacturer() {
         require(
@@ -112,17 +113,13 @@ contract PharmaChain {
         _;
     }
 
-    constructor() {
-        owner = msg.sender;
-    }
-
     function registerUser(
         address _user,
         Role _role,
         bool _isSubAccount,
         address _masterAccount,
         DistributionType _distributionType
-    ) external onlyOwner {
+    ) external {
         require(_user != address(0), "Invalid address");
         if (_isSubAccount) {
             require(
@@ -160,7 +157,6 @@ contract PharmaChain {
             details: _details,
             qualityApproved: false,
             distributor: address(0),
-            provider: address(0),
             rfidUIDHash: _rfidUIDHash,
             isRecalled: false
         });
@@ -242,21 +238,36 @@ contract PharmaChain {
         emit BatchAssignedToDistributor(_batchId, _distributor);
     }
 
-    function assignToProvider(
+    function splitBatch(
         uint256 _batchId,
+        uint256 _numUnits
+    ) external onlyDistributor {
+        require(_numUnits > 0, "Number of units must be greater than zero");
+
+        for (uint256 i = 0; i < _numUnits; i++) {
+            uint256 unitId = nextUnitId++;
+            batchUnits[unitId] = BatchUnit({
+                unitId: unitId,
+                batchId: _batchId,
+                provider: address(0),
+                isAssigned: false
+            });
+        }
+    }
+
+    function assignUnitToProvider(
+        uint256 _unitId,
         address _provider
     ) external onlyDistributor {
         require(users[_provider].role == Role.Provider, "Invalid provider");
 
-        Batch storage batch = batches[_batchId];
-        require(
-            batch.distributor == msg.sender,
-            "Only assigned distributor can assign to provider"
-        );
+        BatchUnit storage unit = batchUnits[_unitId];
+        require(!unit.isAssigned, "Unit already assigned");
 
-        batch.provider = _provider;
+        unit.provider = _provider;
+        unit.isAssigned = true;
 
-        emit BatchAssignedToProvider(_batchId, _provider);
+        emit BatchUnitAssignedToProvider(_unitId, _provider);
     }
 
     function verifyRFID(uint256 _batchId, bytes32 _rfidUIDHash) external {
@@ -266,18 +277,6 @@ contract PharmaChain {
         emit RFIDVerified(_batchId, msg.sender, verified);
     }
 
-    function scanRFID(uint256 _batchId) external view {
-        Batch storage batch = batches[_batchId];
-        require(
-            msg.sender == batch.manufacturer ||
-                msg.sender == batch.distributor ||
-                msg.sender == batch.provider,
-            "Unauthorized scan"
-        );
-
-        // Implement RFID scan logic and data recording here
-    }
-
     function orderBatch(string memory _details) external onlyDistributor {
         emit BatchOrdered(msg.sender, address(0), _details);
     }
@@ -285,6 +284,13 @@ contract PharmaChain {
     function orderMedicine(string memory _details) external onlyProvider {
         emit MedicineOrdered(msg.sender, address(0), _details);
     }
-
-    // Add additional functions as necessary for handling other operations
 }
+
+// To Do:
+
+// Is User Registered Function
+// Is User Sub Account Function
+// Is User Master Account Function
+// Fix Register User Function and implement sub-accounts logic
+
+// Get User Role Function to show different UI based on user role
