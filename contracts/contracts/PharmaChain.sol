@@ -113,6 +113,7 @@ contract PharmaChain {
         _;
     }
 
+    // USER FUNCTIONS
     function registerUser(
         address _user,
         Role _role,
@@ -145,6 +146,7 @@ contract PharmaChain {
         );
     }
 
+    // MANUFACTURER FUNCTIONS
     function createBatch(
         string memory _details,
         bytes32 _rfidUIDHash
@@ -238,6 +240,7 @@ contract PharmaChain {
         emit BatchAssignedToDistributor(_batchId, _distributor);
     }
 
+    // DISTRIBUTOR FUNCTIONS
     function splitBatch(
         uint256 _batchId,
         uint256 _numUnits
@@ -288,9 +291,21 @@ contract PharmaChain {
 
 // To Do:
 
+// USER FUNCTIONS
 // Is User Registered Function
 // Is User Sub Account Function
 // Is User Master Account Function
 // Fix Register User Function and implement sub-accounts logic
 
 // Get User Role Function to show different UI based on user role
+
+// MANUFACTURER FUNCTIONS
+// Is Aproved Function
+// Is Recalled Function
+
+// DISTRIBUTOR FUNCTIONS
+
+// PROVIDER FUNCTIONS
+// Implement rfid scaned location logic/ track
+
+// GENREAL FUNCTIONS
