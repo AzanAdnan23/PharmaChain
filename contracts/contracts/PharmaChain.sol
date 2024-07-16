@@ -309,3 +309,10 @@ contract PharmaChain {
 // Implement rfid scaned location logic/ track
 
 // GENREAL FUNCTIONS
+// Completed orders
+// Pending orders
+// Recalled orders
+// Quality approved orders
+// Quality disapproved orders
+// Orders in transit
+// Orders delivered
