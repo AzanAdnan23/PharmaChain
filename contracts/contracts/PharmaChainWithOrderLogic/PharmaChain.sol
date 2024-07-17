@@ -7,9 +7,18 @@ contract PharmaChain {
         Distributor,
         Provider
     }
+
     enum DistributionType {
         InHouse,
         ThirdParty
+    }
+
+    enum OrderStatus {
+        Pending,
+        Approved,
+        Recalled,
+        InTransit,
+        Delivered
     }
 
     struct User {
@@ -37,12 +46,22 @@ contract PharmaChain {
         bool isAssigned;
     }
 
+    struct Order {
+        uint256 orderId;
+        address distributor;
+        address manufacturer;
+        string details;
+        OrderStatus status;
+    }
+
     mapping(address => User) public users;
     mapping(uint256 => Batch) public batches;
     mapping(uint256 => BatchUnit) public batchUnits;
+    mapping(uint256 => Order) public orders;
 
     uint256 public nextBatchId;
     uint256 public nextUnitId;
+    uint256 public nextOrderId;
 
     event UserRegistered(
         address indexed user,
@@ -77,14 +96,18 @@ contract PharmaChain {
         bool verified
     );
     event BatchOrdered(
+        uint256 indexed orderId,
         address indexed distributor,
         address indexed manufacturer,
-        string details
+        string details,
+        OrderStatus status
     );
     event MedicineOrdered(
+        uint256 indexed orderId,
         address indexed provider,
         address indexed distributor,
-        string details
+        string details,
+        OrderStatus status
     );
 
     modifier onlyManufacturer() {
@@ -302,39 +325,134 @@ contract PharmaChain {
         emit RFIDVerified(_batchId, msg.sender, verified);
     }
 
+    // ORDER FUNCTIONS
     function orderBatch(string memory _details) external onlyDistributor {
-        emit BatchOrdered(msg.sender, address(0), _details);
+        User storage user = users[msg.sender];
+
+        if (user.distributionType == DistributionType.InHouse) {
+            uint256 orderId = nextOrderId++;
+            orders[orderId] = Order({
+                orderId: orderId,
+                distributor: msg.sender,
+                manufacturer: address(0),
+                details: _details,
+                status: OrderStatus.Pending
+            });
+
+            emit BatchOrdered(
+                orderId,
+                msg.sender,
+                address(0),
+                _details,
+                OrderStatus.Pending
+            );
+        } else {
+            uint256 orderId = nextOrderId++;
+            orders[orderId] = Order({
+                orderId: orderId,
+                distributor: msg.sender,
+                manufacturer: user.masterAccount,
+                details: _details,
+                status: OrderStatus.Pending
+            });
+
+            emit BatchOrdered(
+                orderId,
+                msg.sender,
+                user.masterAccount,
+                _details,
+                OrderStatus.Pending
+            );
+        }
     }
 
-    function orderMedicine(string memory _details) external onlyProvider {
-        emit MedicineOrdered(msg.sender, address(0), _details);
+    function approveOrder(uint256 _orderId) external onlyManufacturer {
+        Order storage order = orders[_orderId];
+        require(
+            order.manufacturer == msg.sender,
+            "Only the manufacturer can approve the order"
+        );
+
+        order.status = OrderStatus.Approved;
+
+        emit BatchOrdered(
+            _orderId,
+            order.distributor,
+            msg.sender,
+            order.details,
+            OrderStatus.Approved
+        );
+    }
+
+    function deliverOrder(uint256 _orderId) external onlyDistributor {
+        Order storage order = orders[_orderId];
+        require(
+            order.distributor == msg.sender,
+            "Only the distributor can deliver the order"
+        );
+
+        order.status = OrderStatus.Delivered;
+
+        emit BatchOrdered(
+            _orderId,
+            msg.sender,
+            order.manufacturer,
+            order.details,
+            OrderStatus.Delivered
+        );
+    }
+
+    function trackOrder(uint256 _orderId) external view returns (OrderStatus) {
+        return orders[_orderId].status;
+    }
+
+    function getCompletedOrders() external view returns (Order[] memory) {
+        return filterOrdersByStatus(OrderStatus.Delivered);
+    }
+
+    function getPendingOrders() external view returns (Order[] memory) {
+        return filterOrdersByStatus(OrderStatus.Pending);
+    }
+
+    function getRecalledOrders() external view returns (Order[] memory) {
+        return filterOrdersByStatus(OrderStatus.Recalled);
+    }
+
+    function getQualityApprovedOrders() external view returns (Order[] memory) {
+        return filterOrdersByStatus(OrderStatus.Approved);
+    }
+
+    function getQualityDisapprovedOrders()
+        external
+        view
+        returns (Order[] memory)
+    {
+        return filterOrdersByStatus(OrderStatus.Recalled);
+    }
+
+    function getOrdersInTransit() external view returns (Order[] memory) {
+        return filterOrdersByStatus(OrderStatus.InTransit);
+    }
+
+    function filterOrdersByStatus(
+        OrderStatus _status
+    ) internal view returns (Order[] memory) {
+        uint256 count = 0;
+        for (uint256 i = 0; i < nextOrderId; i++) {
+            if (orders[i].status == _status) {
+                count++;
+            }
+        }
+
+        Order[] memory result = new Order[](count);
+        uint256 index = 0;
+        for (uint256 i = 0; i < nextOrderId; i++) {
+            if (orders[i].status == _status) {
+                result[index] = orders[i];
+                index++;
+            }
+        }
+
+        return result;
     }
 }
-
-// To Do:
-
-// USER FUNCTIONS
-// Fix Register User Function and implement sub-accounts logic
-
-// MANUFACTURER FUNCTIONS
-
-// DISTRIBUTOR FUNCTIONS
-
-// PROVIDER FUNCTIONS
-// Implement rfid scaned location logic/ track
-
-// GENREAL FUNCTIONS
-// Completed orders / Orders delivered
-// Pending orders
-// Recalled orders
-// Quality approved orders
-// Quality disapproved orders
-// Orders in transit
-
-// orderBatch :
-// 1. Distributor just place the order for the batch if it is inhouse distributor.
-// 2.  if it is 3rd poarty distributor then it will place the order to the manufacturer and manufacturer will approve then assign the batch to the distributor.
-
-// orderMedicine
-// 1. Provider will place the order for the medicine and distributor will approve then assign the unit to the provider.
-//
