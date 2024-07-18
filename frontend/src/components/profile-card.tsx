@@ -13,8 +13,9 @@ import {
   accountType,
   gasManagerConfig,
   accountClientOptions as opts,
-  CONTRACT_ADDRESS,
-  CONTRACT_ABI
+  ContractAddress,
+  ContractAbi,
+  
 } from "@/config";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
@@ -26,6 +27,8 @@ export const ProfileCard = () => {
   const user = useUser();
   const { address } = useAccount({ type: accountType });
   const { logout } = useLogout();
+
+
 
   // [!region sending-user-op]
   // use config values to initialize our smart account client
@@ -91,7 +94,7 @@ export const ProfileCard = () => {
             <label className="w-12">To:</label>
             <Input
               name="to"
-              defaultValue={CONTRACT_ADDRESS}
+              defaultValue={ContractAddress}
             />
           </div>
           <div className="flex items-center gap-2">
