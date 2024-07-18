@@ -1,23 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+// 0xdBCa59dD9Ef98415f7dE588963df02Cadc3E218E
 contract PharmaChain {
     enum Role {
         Manufacturer,
         Distributor,
         Provider
     }
-    enum DistributionType {
-        InHouse,
-        ThirdParty
-    }
-    // company name
+
     struct User {
         address account;
+        string companyName;
         Role role;
-        bool isSubAccount;
-        address masterAccount; // For sub-accounts
-        DistributionType distributionType; // Type of distribution
+        string contactInfo;
     }
 
     struct Batch {
@@ -46,10 +42,9 @@ contract PharmaChain {
 
     event UserRegistered(
         address indexed user,
+        string companyName,
         Role role,
-        bool isSubAccount,
-        address masterAccount,
-        DistributionType distributionType
+        string contactInfo
     );
     event BatchCreated(
         uint256 indexed batchId,
@@ -114,50 +109,43 @@ contract PharmaChain {
     // USER FUNCTIONS
     function registerUser(
         address _user,
+        string memory _companyName,
         Role _role,
-        bool _isSubAccount,
-        address _masterAccount,
-        DistributionType _distributionType
+        string memory _contactInfo
     ) external {
         require(_user != address(0), "Invalid address");
-        if (_isSubAccount) {
-            require(
-                users[_masterAccount].role == Role.Manufacturer,
-                "Master account must be a manufacturer"
-            );
-        }
 
         users[_user] = User({
             account: _user,
+            companyName: _companyName,
             role: _role,
-            isSubAccount: _isSubAccount,
-            masterAccount: _masterAccount,
-            distributionType: _distributionType
+            contactInfo: _contactInfo
         });
 
-        emit UserRegistered(
-            _user,
-            _role,
-            _isSubAccount,
-            _masterAccount,
-            _distributionType
-        );
+        emit UserRegistered(_user, _companyName, _role, _contactInfo);
     }
 
     function isUserRegistered(address _user) external view returns (bool) {
         return users[_user].account != address(0);
     }
 
-    function isUserSubAccount(address _user) external view returns (bool) {
-        return users[_user].isSubAccount;
-    }
-
-    function isUserMasterAccount(address _user) external view returns (bool) {
-        return users[_user].masterAccount == _user;
-    }
-
     function getUserRole(address _user) external view returns (Role) {
         return users[_user].role;
+    }
+
+    function getUserInfo(
+        address _user
+    )
+        external
+        view
+        returns (
+            string memory companyName,
+            string memory contactInfo,
+            Role role
+        )
+    {
+        User memory user = users[_user];
+        return (user.companyName, user.contactInfo, user.role);
     }
 
     // MANUFACTURER FUNCTIONS
@@ -183,9 +171,8 @@ contract PharmaChain {
     function approveQuality(uint256 _batchId) external onlyManufacturer {
         Batch storage batch = batches[_batchId];
         require(
-            batch.manufacturer == msg.sender ||
-                users[msg.sender].masterAccount == batch.manufacturer,
-            "Only the manufacturer or sub-accounts can approve quality"
+            batch.manufacturer == msg.sender,
+            "Only the manufacturer can approve quality"
         );
 
         batch.qualityApproved = true;
@@ -196,9 +183,8 @@ contract PharmaChain {
     function disapproveQuality(uint256 _batchId) external onlyManufacturer {
         Batch storage batch = batches[_batchId];
         require(
-            batch.manufacturer == msg.sender ||
-                users[msg.sender].masterAccount == batch.manufacturer,
-            "Only the manufacturer or sub-accounts can disapprove quality"
+            batch.manufacturer == msg.sender,
+            "Only the manufacturer can disapprove quality"
         );
 
         batch.qualityApproved = false;
@@ -209,9 +195,8 @@ contract PharmaChain {
     function recallBatch(uint256 _batchId) external onlyManufacturer {
         Batch storage batch = batches[_batchId];
         require(
-            batch.manufacturer == msg.sender ||
-                users[msg.sender].masterAccount == batch.manufacturer,
-            "Only the manufacturer or sub-accounts can recall the batch"
+            batch.manufacturer == msg.sender,
+            "Only the manufacturer can recall the batch"
         );
 
         batch.isRecalled = true;
@@ -230,24 +215,6 @@ contract PharmaChain {
 
         Batch storage batch = batches[_batchId];
         require(batch.qualityApproved, "Batch must be quality approved");
-
-        batch.distributor = _distributor;
-
-        emit BatchAssignedToDistributor(_batchId, _distributor);
-    }
-
-    function assignInHouseDistributor(
-        uint256 _batchId,
-        address _distributor
-    ) external onlyManufacturer {
-        Batch storage batch = batches[_batchId];
-        require(batch.qualityApproved, "Batch must be quality approved");
-        require(
-            users[_distributor].role == Role.Manufacturer &&
-                users[_distributor].distributionType ==
-                DistributionType.InHouse,
-            "Invalid in-house distributor"
-        );
 
         batch.distributor = _distributor;
 
