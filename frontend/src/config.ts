@@ -13,8 +13,16 @@ import { QueryClient } from "@tanstack/react-query";
 
 import PharmaChain from "../artifacts/contracts/PharmaChain.sol/PharmaChain.json";
 
-export const CONTRACT_ADDRESS = "0x83bac192f2fa774962a538D2ee300695f84eea6f";
+import { createPublicClient, http } from 'viem'
+import { arbitrumSepolia as arbitrumSepoliaviem } from "viem/chains";
+
+export const CONTRACT_ADDRESS = "0x7d29eaA4F8bc836746B63FAd5180069e824DE291";
 export const CONTRACT_ABI = PharmaChain.abi;
+
+export const publicClient = createPublicClient({
+  chain: arbitrumSepoliaviem,
+  transport:  http(process.env.ALCHEMY_RPC_URL),
+});
 
 // [!region create-accounts-config]
 // NOTE: feel free to change the chain here!

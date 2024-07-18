@@ -13,6 +13,8 @@ import {
   accountType,
   gasManagerConfig,
   accountClientOptions as opts,
+  CONTRACT_ADDRESS,
+  CONTRACT_ABI
 } from "@/config";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
@@ -89,7 +91,7 @@ export const ProfileCard = () => {
             <label className="w-12">To:</label>
             <Input
               name="to"
-              defaultValue="0x7d29eaA4F8bc836746B63FAd5180069e824DE291"
+              defaultValue={CONTRACT_ADDRESS}
             />
           </div>
           <div className="flex items-center gap-2">
