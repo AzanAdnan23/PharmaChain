@@ -1,5 +1,5 @@
 // COMPONENT TO CHECK IS USER REGISTERED OR NOT
-
+import React, { useState } from "react";
 import {getContract} from "viem";
 import {
     useAccount,
@@ -18,9 +18,11 @@ import {
     ContractAbi,
     publicClient,
   } from "@/config";
+import { Card } from "@radix-ui/themes";
 
 
   export const userCheck = () => {
+
 
 
     const user = useUser();
@@ -29,7 +31,23 @@ import {
 
     const PharmaChain = getContract({ address: ContractAddress, abi: ContractAbi, client: publicClient })
  
-    const isRegistered = PharmaChain.read.isUserRegistered( [address]);
+    if (address) {
+        const isRegistered =  PharmaChain.read.isUserRegistered([address]);
+        console.log(isRegistered);
+      } else {
+        console.error('Address is undefined');
+      }
+
+
+    //   return (
+    //         <Card>
+    //             <h1>Check if user is registered</h1>
+    //             <p>Address: {address}</p>
+    //             <p>Is Registered: </p>
+    //             <div>{isRegistered}</div>
+    //         </Card>
+
+    //   );
 
 
   };

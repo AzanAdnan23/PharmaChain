@@ -1,6 +1,12 @@
 {
+  "name": "hardhat-project",
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox-viem": "^3.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "hardhat": "^2.22.6"
+  },
+  "dependencies": {
+    "@nomicfoundation/hardhat-ignition": "^0.15.5",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.1"
   }
 }
