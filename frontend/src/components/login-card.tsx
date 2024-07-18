@@ -30,7 +30,7 @@ export const LogInCard = () => {
       ) : (
         <form className="flex flex-col gap-8" onSubmit={login}>
           <div className="text-[18px] font-semibold">
-            Log in to the Embedded Accounts Demo!
+            Log in to PharmaChain
           </div>
           <div className="flex flex-col justify-between gap-6">
             <Input

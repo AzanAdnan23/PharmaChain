@@ -11,7 +11,7 @@ contract PharmaChain {
         InHouse,
         ThirdParty
     }
-
+    // company name
     struct User {
         address account;
         Role role;

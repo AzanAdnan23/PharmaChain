@@ -28,7 +28,7 @@ export default function Home() {
         <LogInCard />
       )}
       <ThemeSwitch />
-      <Button>Hello Radix!</Button>
+      <Button>Hello Snake!</Button>
     </main>
   );
 }
