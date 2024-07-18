@@ -11,9 +11,15 @@ import {
 } from "@alchemy/aa-core";
 import { QueryClient } from "@tanstack/react-query";
 
+import PharmaChain from "../artifacts/contracts/PharmaChain.sol/PharmaChain.json";
+
+export const CONTRACT_ADDRESS = "0x83bac192f2fa774962a538D2ee300695f84eea6f";
+export const CONTRACT_ABI = PharmaChain.abi;
+
 // [!region create-accounts-config]
 // NOTE: feel free to change the chain here!
 export const chain = arbitrumSepolia;
+
 export const config = createConfig({
   // this is for requests to the specific chain RPC
   rpcUrl: "/api/rpc/chain/" + chain.id,
@@ -36,9 +42,16 @@ export const accountType: SupportedAccountTypes = "LightAccount";
 export const gasManagerConfig: AlchemyGasManagerConfig = {
   policyId: process.env.NEXT_PUBLIC_ALCHEMY_GAS_MANAGER_POLICY_ID!,
 };
+
+
+
 // additional options for our account client
 type SmartAccountClienOptions = z.infer<typeof SmartAccountClientOptsSchema>;
 export const accountClientOptions: Partial<SmartAccountClienOptions> = {
   txMaxRetries: 20,
 };
 // [!endregion other-config-vars]
+
+
+
+
