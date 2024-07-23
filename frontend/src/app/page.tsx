@@ -30,7 +30,6 @@ export default function Home() {
       )}
       <ThemeSwitch />
       <UserCheck />
-      <Button>🖕!</Button>
     </main>
   );
 }
