@@ -8,10 +8,7 @@ import { Input } from "./ui/input";
 import { getContract } from "viem";
 import { useAccount, useUser } from "@alchemy/aa-alchemy/react";
 import {
-  chain,
   accountType,
-  gasManagerConfig,
-  accountClientOptions as opts,
   ContractAddress,
   ContractAbi,
   publicClient,
@@ -41,7 +38,7 @@ export const LogInCard = () => {
     try {
       setIsCheckingRegistration(true);
       const result = await PharmaChain.read.isUserRegistered([address]);
-      console.error(" checking registration status:", result as boolean);
+
       setIsRegistered(result as boolean);
     } catch (error) {
       console.error("Error checking registration status:", error);
