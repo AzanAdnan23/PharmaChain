@@ -29,7 +29,6 @@ export const LogInCard = () => {
   const { status } = useSignerStatus();
   const isAwaitingEmail = status === "AWAITING_EMAIL_AUTH";
 
-  const user = useUser();
   const { address } = useAccount({ type: accountType });
 
   const PharmaChain = getContract({
@@ -42,7 +41,7 @@ export const LogInCard = () => {
     try {
       setIsCheckingRegistration(true);
       const result = await PharmaChain.read.isUserRegistered([address]);
-      // console.error(" checking registration status:", result as boolean);
+      console.error(" checking registration status:", result as boolean);
       setIsRegistered(result as boolean);
     } catch (error) {
       console.error("Error checking registration status:", error);
@@ -78,8 +77,9 @@ export const LogInCard = () => {
     setIsLoading(true);
     try {
       // Assuming the contract method needs to be called here instead of using the address
-      const addressToCheck = await PharmaChain.read.getAddressByEmail([email]);
+      const addressToCheck = "0xF446609Bb1576E587969Eb2a88c0F7288C732856";
       const result = await PharmaChain.read.isUserRegistered([addressToCheck]);
+      console.error(" checking registration status:", result as boolean);
       setIsRegistered(result as boolean);
 
       if (result) {
