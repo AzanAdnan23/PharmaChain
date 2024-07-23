@@ -28,6 +28,9 @@ export default function Home() {
         <LogInCard />
       )}
       <ThemeSwitch />
+      <Link href="/dashboard/manufacturer">Manufacturer Dashboard</Link>
+      <Link href="/dashboard/distributor">Distributor Dashboard</Link>
+      <Link href="/dashboard/retailer">Retailer Dashboard</Link>
     </main>
   );
 }
