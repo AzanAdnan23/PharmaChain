@@ -2,7 +2,6 @@
 
 import { LogInCard } from "@/components/login-card";
 import { ProfileCard } from "@/components/profile-card";
-import { UserCheck } from "@/components/userCheck";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import ThemeSwitch from "@/components/ui/theme-switch";
 import { useSignerStatus } from "@alchemy/aa-alchemy/react";

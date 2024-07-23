@@ -42,6 +42,7 @@ export const LogInCard = () => {
     try {
       setIsCheckingRegistration(true);
       const result = await PharmaChain.read.isUserRegistered([address]);
+      // console.error(" checking registration status:", result as boolean);
       setIsRegistered(result as boolean);
     } catch (error) {
       console.error("Error checking registration status:", error);
