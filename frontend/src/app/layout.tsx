@@ -5,8 +5,6 @@ import { Providers } from "./providers";
 import { cookieToInitialState } from "@alchemy/aa-alchemy/config";
 import { headers } from "next/headers";
 import { config } from "@/config";
-import '@radix-ui/themes/styles.css';
-import { Theme } from '@radix-ui/themes';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,9 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Theme>
-          <Providers initialState={initialState}>{children}</Providers>
-        </Theme>
+        <Providers initialState={initialState}>{children}</Providers>
       </body>
     </html>
   );
