@@ -4,9 +4,9 @@
 import { useParams } from "next/navigation";
 
 // import dashboard components
-import ManufacturerDashboard from "@/components/ManufacturerDashboard";
-import DistributorDashboard from "@/components/DistributorDashboard";
-import ProviderDashboard from "@/components/ProviderDashboard";
+import ManufacturerDashboard from "@/components/dashboards/ManufacturerDashboard";
+import DistributorDashboard from "@/components/dashboards/DistributorDashboard";
+import ProviderDashboard from "@/components/dashboards/ProviderDashboard";
 
 const Dashboard = () => {
     const params = useParams();
