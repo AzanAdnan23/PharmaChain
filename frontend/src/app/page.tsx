@@ -19,7 +19,7 @@ export default function Home() {
     isInitializing || (isAuthenticating && status !== "AWAITING_EMAIL_AUTH");
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-24">
+    <div>
       {isLoading ? (
         <LoadingSpinner />
       ) : isConnected ? (
@@ -31,7 +31,7 @@ export default function Home() {
       <Link href="/dashboard/manufacturer">Manufacturer Dashboard</Link>
       <Link href="/dashboard/distributor">Distributor Dashboard</Link>
       <Link href="/dashboard/retailer">Retailer Dashboard</Link>
-    </main>
+    </div>
   );
 }
 // [!endregion using-status]
