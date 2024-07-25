@@ -1,7 +1,7 @@
 "use client";
 
 import { LogInCard } from "@/components/login-card";
-import { ProfileCard } from "@/components/profile-card";
+import { UserCheck } from "@/components/user-check";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import ThemeSwitch from "@/components/ui/theme-switch";
 import { useSignerStatus } from "@alchemy/aa-alchemy/react";
@@ -22,7 +22,7 @@ export default function Login() {
       {isLoading ? (
         <LoadingSpinner />
       ) : isConnected ? (
-        <ProfileCard />
+        <UserCheck />
       ) : (
         <LogInCard />
       )}

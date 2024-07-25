@@ -9,11 +9,12 @@ import {
   useUser,
 } from "@alchemy/aa-alchemy/react";
 import {
-  chain,
   accountType,
   gasManagerConfig,
   accountClientOptions as opts,
   ContractAddress,
+  ContractAbi,
+  publicClient,
 } from "@/config";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
@@ -21,7 +22,7 @@ import { Input } from "./ui/input";
 import { Hex } from "viem";
 import { OpStatus } from "./op-status";
 
-export const ProfileCard = () => {
+export const UserCheck = () => {
   const user = useUser();
   const { address } = useAccount({ type: accountType });
   const { logout } = useLogout();
@@ -74,21 +75,13 @@ export const ProfileCard = () => {
             <div className="font-bold">Email:</div>
             <div>{user?.email}</div>
           </div>
-          <p className="rounded-md bg-slate-100 p-2 text-center font-light dark:bg-slate-800">
-            These default values will mint you 100{" "}
-            <a
-              href={`${chain.blockExplorers?.default.url}/address/0x7d29eaA4F8bc836746B63FAd5180069e824DE291`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-center text-[#363FF9] hover:underline dark:text-[#b6b9f9]"
-            >
-              Minty token
-            </a>
-            ! 🎉
-          </p>
+
           <div className="flex items-center gap-2">
             <label className="w-12">To:</label>
-            <Input name="to" defaultValue={ContractAddress} />
+            <Input
+              name="to"
+              defaultValue="0x7d29eaA4F8bc836746B63FAd5180069e824DE291"
+            />
           </div>
           <div className="flex items-center gap-2">
             <label className="w-12">Data:</label>
