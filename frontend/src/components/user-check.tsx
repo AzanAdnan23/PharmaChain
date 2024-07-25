@@ -21,12 +21,16 @@ import { Input } from "./ui/input";
 import { OpStatus } from "./op-status";
 
 enum Role {
-  Manufacturer,
-  Distributor,
-  Provider,
+  Manufacturer = 0,
+  Distributor = 1,
+  Provider = 2,
 }
 
-export const UserCheck = () => {
+interface UserCheckProps {
+  onUserRoleCheck: (role: string) => void;
+}
+
+export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
   const [email, setEmail] = useState<string>("");
   const [role, setRole] = useState<string>("");
   const [companyName, setCompanyName] = useState<string>("");
@@ -73,6 +77,10 @@ export const UserCheck = () => {
       const result = await PharmaChain.read.isUserRegistered([address]);
       console.log("checkRegistrationStatus:", result as boolean);
       setIsRegistered(result as boolean);
+
+      if (result) {
+        checkUserRole();
+      }
     } catch (error) {
       console.error("Error checking registration status:", error);
       setIsRegistered(false);
@@ -86,6 +94,17 @@ export const UserCheck = () => {
       checkRegistrationStatus();
     }
   }, [address, checkRegistrationStatus]);
+
+  const checkUserRole = useCallback(async () => {
+    try {
+      const result = await PharmaChain.read.getUserRole([address]);
+      console.log("check User Role:", result as string);
+      onUserRoleCheck(result as string); // Pass the role to the parent component
+    } catch (error) {
+      console.error("Error checking role:", error);
+      setIsRegistered(false);
+    }
+  }, [address, onUserRoleCheck]);
 
   // Convert role string to enum value
   const roleEnumValue = (role: string): Role => {
