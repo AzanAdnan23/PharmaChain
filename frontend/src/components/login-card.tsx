@@ -1,18 +1,13 @@
-"use client";
-
-import { useAuthenticate, useSignerStatus } from "@alchemy/aa-alchemy/react";
-import { FormEvent, useCallback, useEffect, useState } from "react";
-import { Button } from "./ui/button";
-import { Card } from "./ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Button } from "./ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { getContract } from "viem";
-import { useAccount, useUser } from "@alchemy/aa-alchemy/react";
-import {
-  accountType,
-  ContractAddress,
-  ContractAbi,
-  publicClient,
-} from "@/config";
+import { accountType, ContractAddress, ContractAbi, publicClient } from "@/config";
+import Link from "next/link";
+import { useAuthenticate, useSignerStatus, useAccount } from "@alchemy/aa-alchemy/react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 
 export const LogInCard = () => {
   const [email, setEmail] = useState<string>("");
@@ -20,8 +15,7 @@ export const LogInCard = () => {
   const [companyName, setCompanyName] = useState<string>("");
   const [isRegistered, setIsRegistered] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isCheckingRegistration, setIsCheckingRegistration] =
-    useState<boolean>(false);
+  const [isCheckingRegistration, setIsCheckingRegistration] = useState<boolean>(false);
   const { authenticate } = useAuthenticate();
   const { status } = useSignerStatus();
   const isAwaitingEmail = status === "AWAITING_EMAIL_AUTH";
@@ -38,7 +32,6 @@ export const LogInCard = () => {
     try {
       setIsCheckingRegistration(true);
       const result = await PharmaChain.read.isUserRegistered([address]);
-
       setIsRegistered(result as boolean);
     } catch (error) {
       console.error("Error checking registration status:", error);
@@ -54,29 +47,15 @@ export const LogInCard = () => {
     }
   }, [address, checkRegistrationStatus]);
 
-  const onEmailChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value),
-    [],
-  );
-
-  const onRoleChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => setRole(e.target.value),
-    [],
-  );
-
-  const onCompanyNameChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => setCompanyName(e.target.value),
-    [],
-  );
+  const onEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value);
+  const onRoleChange = (value: string) => setRole(value);
+  const onCompanyNameChange = (e: React.ChangeEvent<HTMLInputElement>) => setCompanyName(e.target.value);
 
   const login = async (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
     setIsLoading(true);
     try {
-      // Assuming the contract method needs to be called here instead of using the address
-      const addressToCheck = "0xF446609Bb1576E587969Eb2a88c0F7288C732856";
-      const result = await PharmaChain.read.isUserRegistered([addressToCheck]);
-      console.error(" checking registration status:", result as boolean);
+      const result = await PharmaChain.read.isUserRegistered([address]);
       setIsRegistered(result as boolean);
 
       if (result) {
@@ -109,57 +88,61 @@ export const LogInCard = () => {
   }
 
   return (
-    <Card>
-      {isRegistered === null || isRegistered ? (
-        isAwaitingEmail ? (
-          <div className="text-[18px] font-semibold">Check your email!</div>
-        ) : (
-          <form className="flex flex-col gap-8" onSubmit={login}>
-            <div className="text-[18px] font-semibold">
-              Log in to PharmaChain
-            </div>
-            <div className="flex flex-col justify-between gap-6">
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={onEmailChange}
-              />
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Loading..." : "Log in"}
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-2xl">
+            {isRegistered === null || isRegistered ? (isAwaitingEmail ? "Check your email!" : "Log in to PharmaChain") : "Register User"}
+          </CardTitle>
+          <CardDescription>
+            {isRegistered === null || isRegistered ? (isAwaitingEmail ? "Please check your email to complete the login process." : "Enter your email below to log in.") : "Complete the form to register as a new user."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {isRegistered === null || isRegistered ? (
+            isAwaitingEmail ? (
+              <div className="text-[18px] font-semibold">Check your email!</div>
+            ) : (
+              <form className="flex flex-col gap-8" onSubmit={login}>
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" placeholder="Enter your email" value={email} onChange={onEmailChange} required />
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Loading..." : "Log in"}
+                </Button>
+              </form>
+            )
+          ) : (
+            <form className="flex flex-col gap-8" onSubmit={registerUser}>
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" placeholder="Enter your email" value={email} onChange={onEmailChange} readOnly />
+              <Label htmlFor="company-name">Company Name</Label>
+              <Input id="company-name" type="text" placeholder="Enter your company name" value={companyName} onChange={onCompanyNameChange} />
+              <Label htmlFor="role">Role</Label>
+              <Select value={role} onValueChange={onRoleChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Manufacturer">Manufacturer</SelectItem>
+                  <SelectItem value="Distributor">Distributor</SelectItem>
+                  <SelectItem value="Provider">Provider</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Loading..." : "Register"}
               </Button>
-            </div>
-          </form>
-        )
-      ) : (
-        <form className="flex flex-col gap-8" onSubmit={registerUser}>
-          <div className="text-[18px] font-semibold">Register User</div>
-          <div className="flex flex-col justify-between gap-6">
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={onEmailChange}
-              readOnly
-            />
-            <Input
-              type="text"
-              placeholder="Enter your company name"
-              value={companyName}
-              onChange={onCompanyNameChange}
-            />
-            <select value={role} onChange={onRoleChange}>
-              <option value="">Select your role</option>
-              <option value="Manufacturer">Manufacturer</option>
-              <option value="Distributor">Distributor</option>
-              <option value="Provider">Provider</option>
-            </select>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Loading..." : "Register"}
-            </Button>
-          </div>
-        </form>
-      )}
-    </Card>
+            </form>
+          )}
+        </CardContent>
+        <CardFooter>
+          {/* <div className="mt-4 text-center text-sm">
+            Don't have an account?{" "}
+            <Link href="#" className="underline underline-offset-2" prefetch={false}>
+              Sign up
+            </Link>
+          </div> */}
+        </CardFooter>
+      </Card>
+    </div>
   );
 };

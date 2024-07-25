@@ -1,11 +1,9 @@
 "use client";
 
-import { CreateBatchForm } from "./createBatchForm";
-
 export default function ManufacturerDashboard() {
     return (
         <div>
-            <CreateBatchForm />
+            <h1>Manufacturer Dashboard</h1>
         </div>
     )
 }
