@@ -1,9 +1,7 @@
-"use client";
-
-import React, { FormEvent } from "react";
+import React from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import {
   useAccount,
-  useLogout,
   useSendUserOperation,
   useSmartAccountClient,
   useUser,
@@ -16,27 +14,93 @@ import {
   ContractAbi,
   publicClient,
 } from "@/config";
+import { getContract, encodeFunctionData } from "viem";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Hex } from "viem";
 import { OpStatus } from "./op-status";
 
+enum Role {
+  Manufacturer,
+  Distributor,
+  Provider,
+}
+
 export const UserCheck = () => {
+  const [email, setEmail] = useState<string>("");
+  const [role, setRole] = useState<string>("");
+  const [companyName, setCompanyName] = useState<string>("");
+  const [isRegistered, setIsRegistered] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isCheckingRegistration, setIsCheckingRegistration] =
+    useState<boolean>(false);
+
   const user = useUser();
   const { address } = useAccount({ type: accountType });
-  const { logout } = useLogout();
 
-  // [!region sending-user-op]
-  // use config values to initialize our smart account client
   const { client } = useSmartAccountClient({
     type: accountType,
     gasManagerConfig,
     opts,
   });
 
-  // provide the useSendUserOperation with a client to send a UO
-  // this hook provides us with a status, error, and a result
+  const PharmaChain = getContract({
+    address: ContractAddress,
+    abi: ContractAbi,
+    client: publicClient,
+  });
+
+  const onEmailChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value),
+    [],
+  );
+
+  const onRoleChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => setRole(e.target.value),
+    [],
+  );
+
+  const onCompanyNameChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setCompanyName(e.target.value),
+    [],
+  );
+
+  const checkRegistrationStatus = useCallback(async () => {
+    if (!address) return;
+
+    try {
+      setIsCheckingRegistration(true);
+      const result = await PharmaChain.read.isUserRegistered([address]);
+      console.log("checkRegistrationStatus:", result as boolean);
+      setIsRegistered(result as boolean);
+    } catch (error) {
+      console.error("Error checking registration status:", error);
+      setIsRegistered(false);
+    } finally {
+      setIsCheckingRegistration(false);
+    }
+  }, [address]);
+
+  useEffect(() => {
+    if (address) {
+      checkRegistrationStatus();
+    }
+  }, [address, checkRegistrationStatus]);
+
+  // Convert role string to enum value
+  const roleEnumValue = (role: string): Role => {
+    switch (role) {
+      case "Manufacturer":
+        return Role.Manufacturer;
+      case "Distributor":
+        return Role.Distributor;
+      case "Provider":
+        return Role.Provider;
+      default:
+        throw new Error(`Unknown role: ${role}`);
+    }
+  };
+
   const {
     sendUserOperation,
     sendUserOperationResult,
@@ -44,28 +108,43 @@ export const UserCheck = () => {
     error: isSendUserOperationError,
   } = useSendUserOperation({ client, waitForTxn: true });
 
-  const send = (evt: FormEvent<HTMLFormElement>) => {
+  const registerUser = async (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
 
-    // collect all the form values from the user input
-    const formData = new FormData(evt.currentTarget);
-    const target = formData.get("to") as Hex;
-    const data = formData.get("data") as Hex;
-    const value = formData.get("value") as string;
-
-    // send the user operation
-    sendUserOperation({
-      uo: { target, data, value: value ? BigInt(value) : 0n },
-    });
+    const uoCallData = client
+      ? encodeFunctionData({
+          abi: ContractAbi,
+          functionName: "registerUser",
+          args: [address, companyName, roleEnumValue(role), email],
+        })
+      : null;
+    if (!client || !uoCallData) {
+      console.error("Client not initialized or uoCallData is null");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const uo = sendUserOperation({
+        uo: {
+          target: ContractAddress,
+          data: uoCallData,
+        },
+      });
+      setIsRegistered(true);
+    } catch (error) {
+      console.error("Error registering user:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
-  // [!endregion sending-user-op]
+
+  if (isCheckingRegistration) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Card>
-      <form className="flex flex-col gap-4" onSubmit={send}>
-        <div className="text-center text-lg font-semibold">
-          Send a Transaction!
-        </div>
+      <form className="flex flex-col gap-4">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <div className="font-bold">Address:</div>
@@ -75,45 +154,46 @@ export const UserCheck = () => {
             <div className="font-bold">Email:</div>
             <div>{user?.email}</div>
           </div>
-
-          <div className="flex items-center gap-2">
-            <label className="w-12">To:</label>
-            <Input
-              name="to"
-              defaultValue="0x7d29eaA4F8bc836746B63FAd5180069e824DE291"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="w-12">Data:</label>
-            <Input
-              name="data"
-              defaultValue="0xa0712d680000000000000000000000000000000000000000000000056bc75e2d63100000"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="w-12">Value:</label>
-            <Input name="value" defaultValue="0" />
-          </div>
         </div>
-        <div className="my-2 flex flex-col gap-4">
-          <Button type="submit" disabled={isSendingUserOperation}>
-            Send Transaction
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => logout()}
-            disabled={isSendingUserOperation}
-          >
-            Logout
-          </Button>
-        </div>
+        <div className="my-2 flex flex-col gap-4"></div>
         <OpStatus
           sendUserOperationResult={sendUserOperationResult}
           isSendingUserOperation={isSendingUserOperation}
           isSendUserOperationError={isSendUserOperationError}
         />
       </form>
+      {isRegistered === null ? (
+        <></>
+      ) : isRegistered ? (
+        <></>
+      ) : (
+        <form className="flex flex-col gap-8" onSubmit={registerUser}>
+          <div className="text-[18px] font-semibold">Register User</div>
+          <div className="flex flex-col justify-between gap-6">
+            <Input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={onEmailChange}
+            />
+            <Input
+              type="text"
+              placeholder="Enter your company name"
+              value={companyName}
+              onChange={onCompanyNameChange}
+            />
+            <select value={role} onChange={onRoleChange}>
+              <option value="">Select your role</option>
+              <option value="Manufacturer">Manufacturer</option>
+              <option value="Distributor">Distributor</option>
+              <option value="Provider">Provider</option>
+            </select>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Loading..." : "Register"}
+            </Button>
+          </div>
+        </form>
+      )}
     </Card>
   );
 };
