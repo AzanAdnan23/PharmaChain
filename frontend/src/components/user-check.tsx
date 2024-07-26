@@ -18,7 +18,6 @@ import { getContract, encodeFunctionData } from "viem";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { OpStatus } from "./op-status";
 
 enum Role {
   Manufacturer = 0,
@@ -95,6 +94,12 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
     }
   }, [address, checkRegistrationStatus]);
 
+  useEffect(() => {
+    if (user && user.email) {
+      setEmail(user.email);
+    }
+  }, [user]);
+
   const checkUserRole = useCallback(async () => {
     try {
       const result = await PharmaChain.read.getUserRole([address]);
@@ -106,7 +111,6 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
     }
   }, [address, onUserRoleCheck]);
 
-  // Convert role string to enum value
   const roleEnumValue = (role: string): Role => {
     switch (role) {
       case "Manufacturer":
@@ -143,7 +147,7 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
     }
     setIsLoading(true);
     try {
-      const uo = sendUserOperation({
+      await sendUserOperation({
         uo: {
           target: ContractAddress,
           data: uoCallData,
@@ -164,22 +168,7 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
   return (
     <Card>
       <form className="flex flex-col gap-4">
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2">
-            <div className="font-bold">Address:</div>
-            <div>{address}</div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="font-bold">Email:</div>
-            <div>{user?.email}</div>
-          </div>
-        </div>
         <div className="my-2 flex flex-col gap-4"></div>
-        <OpStatus
-          sendUserOperationResult={sendUserOperationResult}
-          isSendingUserOperation={isSendingUserOperation}
-          isSendUserOperationError={isSendUserOperationError}
-        />
       </form>
       {isRegistered === null ? (
         <></>
@@ -194,6 +183,7 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
               placeholder="Enter your email"
               value={email}
               onChange={onEmailChange}
+              readOnly // Make the input read-only if you don't want the user to change it
             />
             <Input
               type="text"
