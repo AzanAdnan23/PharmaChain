@@ -4,15 +4,17 @@ import { Button } from "./ui/button"; // Ensure Button is from shadcn/ui compone
 
 const Navbar = () => {
   return (
-    <header className="flex items-center justify-between h-16 px-4 border-b bg-white shadow-md">
+    <header className="flex items-center justify-between h-16 px-4 border-b bg-white dark:bg-gray-800 shadow-md">
       <nav className="flex items-center">
-        <Link href="/" className="text-lg font-semibold">
+        <Link href="/" className="text-lg font-semibold text-black dark:text-white">
           PharmaChain
         </Link>
       </nav>
       <nav className="flex items-center">
         <Link href="/login" passHref>
-          <Button className="bg-black text-white">Login</Button>
+          <Button className="bg-black text-white dark:bg-gray-300 dark:text-black">
+            Launch App
+          </Button>
         </Link>
       </nav>
     </header>

@@ -7,21 +7,19 @@ import { useParams } from "next/navigation";
 import ManufacturerDashboard from "@/components/dashboards/ManufacturerDashboard";
 import DistributorDashboard from "@/components/dashboards/DistributorDashboard";
 import ProviderDashboard from "@/components/dashboards/ProviderDashboard";
+import Navbar from "@/components/Navbar";
 
 const Dashboard = () => {
     const params = useParams();
     const userType = params.userType;
-
-    switch (userType) {
-        case "manufacturer":
-            return <ManufacturerDashboard />;
-        case "distributor":
-            return <DistributorDashboard />;
-        case "provider":
-            return <ProviderDashboard />;
-        default:
-            return <h1>Route Not Found!</h1>;
-    }
+    return(
+        <div>
+            <Navbar />
+            {userType === "manufacturer" && <ManufacturerDashboard />}
+            {userType === "distributor" && <DistributorDashboard />}
+            {userType === "provider" && <ProviderDashboard />}
+        </div>
+    );
 };
 
 export default Dashboard;
