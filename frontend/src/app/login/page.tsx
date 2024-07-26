@@ -6,9 +6,8 @@ import { UserCheck } from "@/components/user-check";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import ThemeSwitch from "@/components/ui/theme-switch";
 import { useSignerStatus } from "@alchemy/aa-alchemy/react";
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation"; // Ensure correct import from next/navigation
 
 export default function Login() {
   const { isInitializing, isAuthenticating, isConnected, status } =
@@ -17,6 +16,7 @@ export default function Login() {
     isInitializing || (isAuthenticating && status !== "AWAITING_EMAIL_AUTH");
 
   const [userRole, setUserRole] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleUserRole = (role: string) => {
     setUserRole(role);
@@ -35,8 +35,15 @@ export default function Login() {
     }
   };
 
+  useEffect(() => {
+    if (userRole != null) {
+      const roleString = getRoleString(userRole);
+      router.push(`/dashboard/${roleString}`);
+    }
+  }, [userRole, router]);
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
       <div className="w-full max-w-md">
         <Card>
           <CardHeader className="text-center">
@@ -51,13 +58,6 @@ export default function Login() {
               <UserCheck onUserRoleCheck={handleUserRole} />
             ) : (
               <LogInCard />
-            )}
-            {userRole != null && (
-              <div className="mt-4 text-center">
-                <Link href={`/dashboard/${getRoleString(userRole)}`}>
-                  <Button className="w-full">Go to Dashboard</Button>
-                </Link>
-              </div>
             )}
           </CardContent>
         </Card>

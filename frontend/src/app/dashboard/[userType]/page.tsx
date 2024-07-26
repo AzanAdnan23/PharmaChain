@@ -10,16 +10,16 @@ import ProviderDashboard from "@/components/dashboards/ProviderDashboard";
 import Navbar from "@/components/Navbar";
 
 const Dashboard = () => {
-    const params = useParams();
-    const userType = params.userType;
-    return(
-        <div>
-            <Navbar />
-            {userType === "manufacturer" && <ManufacturerDashboard />}
-            {userType === "distributor" && <DistributorDashboard />}
-            {userType === "provider" && <ProviderDashboard />}
-        </div>
-    );
+  const params = useParams();
+  const userType = params.userType;
+  return (
+    <div>
+      <Navbar />
+      {userType === "manufacturer" && <ManufacturerDashboard />}
+      {userType === "distributor" && <DistributorDashboard />}
+      {userType === "provider" && <ProviderDashboard />}
+    </div>
+  );
 };
 
 export default Dashboard;
