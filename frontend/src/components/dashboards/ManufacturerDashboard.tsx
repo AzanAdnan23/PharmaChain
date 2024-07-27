@@ -11,32 +11,11 @@ const ManufacturerDashboard = () => {
       <CreateBatchForm />
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Created Batches</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CreatedBatchesTable />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Current Orders</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CurrentOrdersTable />
-          </CardContent>
-        </Card>
+        <CreatedBatchesTable />
+        <CurrentOrdersTable />
       </div>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Orders Fulfilled</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <OrdersFulfilledTable />
-        </CardContent>
-      </Card>
+      <OrdersFulfilledTable />
     </div>
   );
 };

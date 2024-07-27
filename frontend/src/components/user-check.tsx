@@ -18,6 +18,7 @@ import { getContract, encodeFunctionData } from "viem";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { LoadingSpinner } from "./ui/loading-spinner";
 
 enum Role {
   Manufacturer = 0,
@@ -162,7 +163,7 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
   };
 
   if (isCheckingRegistration) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner />;
   }
 
   return (
