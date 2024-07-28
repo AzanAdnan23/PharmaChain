@@ -61,9 +61,6 @@ export default function Login() {
             )}
           </CardContent>
         </Card>
-        <div className="mt-4 text-center">
-          <ThemeSwitch />
-        </div>
       </div>
     </div>
   );
