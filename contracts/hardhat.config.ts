@@ -4,7 +4,15 @@ require("@nomicfoundation/hardhat-ignition");
 require("dotenv").config();
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.24",
+  solidity: {
+    version: "0.8.24",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200  // Set a low value to optimize the code
+      }
+    }
+  },
   paths: {
     artifacts: "../frontend/artifacts",
   },
