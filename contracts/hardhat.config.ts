@@ -21,7 +21,8 @@ const config: HardhatUserConfig = {
     arbitrumSepolia: {
       url: `${process.env.ALCHEMY_RPC_URL}`, 
       accounts: [`0x${process.env.PRIVATE_KEY}`],
-      chainId: 421614 // Arbitrum Sepolia chain ID
+      chainId: 421614, // Arbitrum Sepolia chain ID
+      gas: 5000000,
     }
   }
 };

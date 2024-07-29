@@ -61,7 +61,7 @@ export default function CreateBatchForm() {
     }
     setIsLoading(true);
     try {
-      sendUserOperation({
+      await sendUserOperation({
         uo: {
           target: ContractAddress,
           data: uoCallData,

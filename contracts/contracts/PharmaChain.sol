@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-// 0x19230ae14C4CaDD18Cb051135fcAaEB9e16f2320
+// 0x4Eca6ab23cc69687A8ad264d8Ba1e58562d64cc2
 contract PharmaChain {
     enum Role {
         Manufacturer,
@@ -78,6 +78,32 @@ contract PharmaChain {
     uint256 public nextDistributorOrderId;
     uint256 public nextProviderOrderId;
 
+    event UserRegistered(
+        address indexed user,
+        string companyName,
+        Role role,
+        string contactInfo
+    );
+    event BatchCreated(
+        uint256 indexed batchId,
+        address indexed manufacturer,
+        string details,
+        bytes32 rfidUIDHash,
+        uint256 manufactureDate,
+        uint256 expiryDate,
+        uint256 quantity
+    );
+    event QualityApproved(uint256 indexed batchId, address indexed approver);
+    event QualityDisapproved(
+        uint256 indexed batchId,
+        address indexed disapprover
+    );
+    event BatchRecalled(uint256 indexed batchId, address indexed initiator);
+    event BatchAssignedToDistributor(
+        uint256 indexed batchId,
+        address indexed distributor
+    );
+
     modifier onlyManufacturer() {
         require(
             users[msg.sender].role == Role.Manufacturer,
@@ -117,6 +143,8 @@ contract PharmaChain {
             role: _role,
             contactInfo: _contactInfo
         });
+
+        emit UserRegistered(_user, _companyName, _role, _contactInfo);
     }
 
     function isUserRegistered(address _user) external view returns (bool) {
@@ -169,6 +197,16 @@ contract PharmaChain {
             expiryDate: _expiryDate,
             quantity: _quantity
         });
+
+        emit BatchCreated(
+            batchId,
+            msg.sender,
+            _details,
+            _rfidUIDHash,
+            block.timestamp,
+            _expiryDate,
+            _quantity
+        );
     }
 
     function approveQuality(uint256 _batchId) external onlyManufacturer {
@@ -179,6 +217,8 @@ contract PharmaChain {
         );
 
         batch.qualityApproved = true;
+
+        emit QualityApproved(_batchId, msg.sender);
     }
 
     function disapproveQuality(uint256 _batchId) external onlyManufacturer {
@@ -189,6 +229,8 @@ contract PharmaChain {
         );
 
         batch.qualityApproved = false;
+
+        emit QualityDisapproved(_batchId, msg.sender);
     }
 
     function recallBatch(uint256 _batchId) public onlyManufacturer {
@@ -199,6 +241,8 @@ contract PharmaChain {
         );
 
         batch.isRecalled = true;
+
+        emit BatchRecalled(_batchId, msg.sender);
     }
 
     function assignToDistributor(
@@ -214,6 +258,8 @@ contract PharmaChain {
         require(batch.qualityApproved, "Batch must be quality approved");
 
         batch.distributor = _distributor;
+
+        emit BatchAssignedToDistributor(_batchId, _distributor);
     }
 
     function getCreatedBatches(
