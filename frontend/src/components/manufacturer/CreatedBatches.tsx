@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
-import { getContract } from "viem";
+import { useEffect, useState } from "react";
+import { encodeFunctionData, getContract } from "viem";
 import {
   useAccount,
-  useUser,
+  useSendUserOperation,
   useSmartAccountClient,
 } from "@alchemy/aa-alchemy/react";
 import {
@@ -44,53 +44,113 @@ export default function CreatedBatchesTable() {
 
   const { address } = useAccount({ type: accountType });
 
-  useEffect(() => {
-    if (address) {
-      const PharmaChain = getContract({
-        address: ContractAddress,
-        abi: ContractAbi,
-        client: publicClient,
-      });
+  const fetchCreatedBatches = async () => {
+    if (!address) return;
 
-      const fetchCreatedBatches = async () => {
-        setIsLoading(true);
-        try {
-          const result = await PharmaChain.read.getCreatedBatches([address]);
-          console.log(address);
-          console.log("Getting Created Batches", result);
+    const PharmaChain = getContract({
+      address: ContractAddress,
+      abi: ContractAbi,
+      client: publicClient,
+    });
 
-          // Convert the result to the correct format
-          const formattedBatches = (result as any[]).map((batch) => ({
-            batchId: Number(batch.batchId),
-            manufacturer: batch.manufacturer,
-            details: batch.details,
-            qualityApproved: batch.qualityApproved,
-            distributor: batch.distributor,
-            rfidUIDHash: batch.rfidUIDHash,
-            isRecalled: batch.isRecalled,
-            manufactureDate: Number(batch.manufactureDate),
-            expiryDate: Number(batch.expiryDate),
-            quantity: Number(batch.quantity),
-          }));
+    setIsLoading(true);
+    try {
+      const result = await PharmaChain.read.getCreatedBatches([address]);
+      console.log("Getting Created Batches", result);
 
-          setCreatedBatches(formattedBatches);
-        } catch (error) {
-          console.error("Error fetching created batches:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
+      // Convert the result to the correct format
+      const formattedBatches = (result as any[]).map((batch) => ({
+        batchId: Number(batch.batchId),
+        manufacturer: batch.manufacturer,
+        details: batch.details,
+        qualityApproved: batch.qualityApproved,
+        distributor: batch.distributor,
+        rfidUIDHash: batch.rfidUIDHash,
+        isRecalled: batch.isRecalled,
+        manufactureDate: Number(batch.manufactureDate),
+        expiryDate: Number(batch.expiryDate),
+        quantity: Number(batch.quantity),
+      }));
 
-      fetchCreatedBatches();
+      setCreatedBatches(formattedBatches);
+    } catch (error) {
+      console.error("Error fetching created batches:", error);
+    } finally {
+      setIsLoading(false);
     }
-  }, [address]);
-
-  const handleAccept = (batchID: number) => {
-    // Handle accept action
   };
 
-  const handleReject = (batchID: number) => {
-    // Handle reject action
+  useEffect(() => {
+    fetchCreatedBatches();
+  }, [address]);
+
+  const { client } = useSmartAccountClient({
+    type: accountType,
+    gasManagerConfig,
+    opts,
+  });
+  const {
+    sendUserOperation,
+    isSendingUserOperation,
+    error: isSendUserOperationError,
+  } = useSendUserOperation({ client, waitForTxn: true });
+
+  const handleAccept = async (batchID: number) => {
+    const uoCallData = encodeFunctionData({
+      abi: ContractAbi,
+      functionName: "approveQuality",
+      args: [batchID],
+    });
+
+    if (!client || !uoCallData) {
+      console.error("Client not initialized or uoCallData is null");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await sendUserOperation({
+        uo: {
+          target: ContractAddress,
+          data: uoCallData,
+        },
+      });
+      console.log("Batch Quality Approved by this address", address);
+      await fetchCreatedBatches(); // Refetch data after operation
+    } catch (error) {
+      console.error("Error approving quality of batch:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReject = async (batchID: number) => {
+    const uoCallData = encodeFunctionData({
+      abi: ContractAbi,
+      functionName: "disapproveQuality",
+      args: [batchID],
+    });
+
+    if (!client || !uoCallData) {
+      console.error("Client not initialized or uoCallData is null");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await sendUserOperation({
+        uo: {
+          target: ContractAddress,
+          data: uoCallData,
+        },
+      });
+      console.log("Batch Quality Disapproved by this address", address);
+      await fetchCreatedBatches(); // Refetch data after operation
+    } catch (error) {
+      console.error("Error disapproving quality of batch:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const formatDate = (timestamp: number) => {
@@ -106,6 +166,8 @@ export default function CreatedBatchesTable() {
       <CardContent>
         {isLoading ? (
           <p>Loading...</p>
+        ) : createdBatches.length === 0 ? (
+          <p>No batches found</p>
         ) : (
           <Table>
             <TableHeader>
@@ -138,12 +200,16 @@ export default function CreatedBatchesTable() {
                       "Approved"
                     ) : (
                       <>
-                        <Button onClick={() => handleAccept(batch.batchId)}>
+                        <Button
+                          onClick={() => handleAccept(batch.batchId)}
+                          disabled={isSendingUserOperation}
+                        >
                           Approve
                         </Button>
                         <Button
                           onClick={() => handleReject(batch.batchId)}
                           className="ml-2"
+                          disabled={isSendingUserOperation}
                         >
                           Disapprove
                         </Button>

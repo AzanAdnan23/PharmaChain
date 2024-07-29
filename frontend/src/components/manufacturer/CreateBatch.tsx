@@ -4,7 +4,6 @@ import {
   useAccount,
   useSendUserOperation,
   useSmartAccountClient,
-  useUser,
 } from "@alchemy/aa-alchemy/react";
 import {
   accountType,
