@@ -1,10 +1,9 @@
-import { FormEvent, useState } from "react";
-import { encodeFunctionData } from "viem";
+import { useCallback, useEffect, useState } from "react";
+import { getContract } from "viem";
 import {
   useAccount,
-  useSendUserOperation,
-  useSmartAccountClient,
   useUser,
+  useSmartAccountClient,
 } from "@alchemy/aa-alchemy/react";
 import {
   accountType,
@@ -12,6 +11,7 @@ import {
   accountClientOptions as opts,
   ContractAddress,
   ContractAbi,
+  publicClient,
 } from "@/config";
 
 import {
@@ -25,24 +25,77 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 
-export default function CreatedBatchesTable() {
-  // Example data; replace with real data
-  const batches = [
-    {
-      batchID: "001",
-      medicineName: "Aspirin",
-      quantity: 100,
-      status: "Created",
-    },
-    // ... other batches
-  ];
+interface Batch {
+  batchId: number;
+  manufacturer: string;
+  details: string;
+  qualityApproved: boolean;
+  distributor: string;
+  rfidUIDHash: string;
+  isRecalled: boolean;
+  manufactureDate: number;
+  expiryDate: number;
+  quantity: number;
+}
 
-  const handleAccept = (batchID: string) => {
+export default function CreatedBatchesTable() {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [createdBatches, setCreatedBatches] = useState<Batch[]>([]);
+
+  const { address } = useAccount({ type: accountType });
+
+  useEffect(() => {
+    if (address) {
+      const PharmaChain = getContract({
+        address: ContractAddress,
+        abi: ContractAbi,
+        client: publicClient,
+      });
+
+      const fetchCreatedBatches = async () => {
+        setIsLoading(true);
+        try {
+          const result = await PharmaChain.read.getCreatedBatches([address]);
+          console.log(address);
+          console.log("Getting Created Batches", result);
+
+          // Convert the result to the correct format
+          const formattedBatches = (result as any[]).map((batch) => ({
+            batchId: Number(batch.batchId),
+            manufacturer: batch.manufacturer,
+            details: batch.details,
+            qualityApproved: batch.qualityApproved,
+            distributor: batch.distributor,
+            rfidUIDHash: batch.rfidUIDHash,
+            isRecalled: batch.isRecalled,
+            manufactureDate: Number(batch.manufactureDate),
+            expiryDate: Number(batch.expiryDate),
+            quantity: Number(batch.quantity),
+          }));
+
+          setCreatedBatches(formattedBatches);
+        } catch (error) {
+          console.error("Error fetching created batches:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchCreatedBatches();
+    }
+  }, [address]);
+
+  const handleAccept = (batchID: number) => {
     // Handle accept action
   };
 
-  const handleReject = (batchID: string) => {
+  const handleReject = (batchID: number) => {
     // Handle reject action
+  };
+
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp * 1000);
+    return date.toLocaleDateString();
   };
 
   return (
@@ -51,38 +104,57 @@ export default function CreatedBatchesTable() {
         <CardTitle>Created Batches</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Batch ID</TableHead>
-              <TableHead>Medicine Name</TableHead>
-              <TableHead>Quantity</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {batches.map((batch) => (
-              <TableRow key={batch.batchID}>
-                <TableCell>{batch.batchID}</TableCell>
-                <TableCell>{batch.medicineName}</TableCell>
-                <TableCell>{batch.quantity}</TableCell>
-                <TableCell>{batch.status}</TableCell>
-                <TableCell>
-                  <Button onClick={() => handleAccept(batch.batchID)}>
-                    Accept
-                  </Button>
-                  <Button
-                    onClick={() => handleReject(batch.batchID)}
-                    className="ml-2"
-                  >
-                    Reject
-                  </Button>
-                </TableCell>
+        {isLoading ? (
+          <p>Loading...</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Batch ID</TableHead>
+                <TableHead>Medicine Name</TableHead>
+                <TableHead>Quantity</TableHead>
+                <TableHead>Manufacture Date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Quality</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {createdBatches.map((batch) => (
+                <TableRow key={batch.batchId}>
+                  <TableCell>{batch.batchId}</TableCell>
+                  <TableCell>{batch.details}</TableCell>
+                  <TableCell>{batch.quantity}</TableCell>
+                  <TableCell>{formatDate(batch.manufactureDate)}</TableCell>
+                  <TableCell>
+                    {batch.isRecalled
+                      ? "Recalled"
+                      : batch.distributor ===
+                          "0x0000000000000000000000000000000000000000"
+                        ? "Not Assigned"
+                        : "Assigned"}
+                  </TableCell>
+                  <TableCell>
+                    {batch.qualityApproved ? (
+                      "Approved"
+                    ) : (
+                      <>
+                        <Button onClick={() => handleAccept(batch.batchId)}>
+                          Approve
+                        </Button>
+                        <Button
+                          onClick={() => handleReject(batch.batchId)}
+                          className="ml-2"
+                        >
+                          Disapprove
+                        </Button>
+                      </>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
     </Card>
   );

@@ -26,7 +26,6 @@ export default function CreateBatchForm() {
   const [expiryDate, setExpiryDate] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const user = useUser();
   const { address } = useAccount({ type: accountType });
   const { client } = useSmartAccountClient({
     type: accountType,
