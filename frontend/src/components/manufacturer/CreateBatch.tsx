@@ -50,7 +50,6 @@ export default function CreateBatchForm() {
           abi: ContractAbi,
           functionName: "createBatch",
           args: [medicineName, rfidUID, expiryTimestamp, quantity],
-          // rfid uid in btes32: 0x00000000000000000000000000000000000000000000000000000000000004d2
         })
       : null;
     if (!client || !uoCallData) {
@@ -71,6 +70,11 @@ export default function CreateBatchForm() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const scanRfid = () => {
+    const arbitraryRfidUID = "1234567890ABCDEF";
+    setRfidUID(arbitraryRfidUID);
   };
 
   return (
@@ -108,17 +112,21 @@ export default function CreateBatchForm() {
               className="mb-2"
             />
           </div>
-          <div>
-            <label>RFID UID</label>
-            <Input
-              type="text"
-              placeholder="Enter the RFID UID"
-              value={rfidUID}
-              onChange={(e) => setRfidUID(e.target.value)}
-              className="mb-2"
-            />
+          <div className="flex items-center space-x-2">
+            <div className="flex-grow">
+              <label>RFID UID</label>
+              <Input
+                type="text"
+                placeholder="Enter the RFID UID"
+                value={rfidUID}
+                onChange={(e) => setRfidUID(e.target.value)}
+                className="mb-2 w-full"
+              />
+            </div>
+            <Button type="button" onClick={scanRfid} className="mb-2 self-end">
+              Scan RFID
+            </Button>
           </div>
-
           <Button type="submit" className="mt-4" disabled={isLoading}>
             {isLoading ? <LoadingSpinner /> : "Create Batch"}
           </Button>
