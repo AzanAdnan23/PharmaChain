@@ -30,6 +30,7 @@ interface Batch {
   manufacturer: string;
   details: string;
   qualityApproved: boolean;
+  QualityDisapproved: boolean;
   distributor: string;
   rfidUIDHash: string;
   isRecalled: boolean;
@@ -63,7 +64,8 @@ export default function CreatedBatchesTable() {
         batchId: Number(batch.batchId),
         manufacturer: batch.manufacturer,
         details: batch.details,
-        qualityApproved: batch.qualityApproved,
+        qualityApproved: batch.isQualityApproved,
+        QualityDisapproved: batch.isQualityDisapproved,
         distributor: batch.distributor,
         rfidUIDHash: batch.rfidUIDHash,
         isRecalled: batch.isRecalled,
@@ -198,6 +200,8 @@ export default function CreatedBatchesTable() {
                   <TableCell>
                     {batch.qualityApproved ? (
                       "Approved"
+                    ) : batch.QualityDisapproved ? (
+                      "Not Approved"
                     ) : (
                       <>
                         <Button
