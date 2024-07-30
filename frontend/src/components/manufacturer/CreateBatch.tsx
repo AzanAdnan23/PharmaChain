@@ -73,7 +73,8 @@ export default function CreateBatchForm() {
   };
 
   const scanRfid = () => {
-    const arbitraryRfidUID = "1234567890ABCDEF";
+    const arbitraryRfidUID =
+      "0x00000000000000000000000000000000000000000000000000000000000004d2";
     setRfidUID(arbitraryRfidUID);
   };
 
