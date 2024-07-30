@@ -1,9 +1,21 @@
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from "@/components/ui/table";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-export default function BatchDetailsTable() {
+export default function OrderBatchDetailsTable() {
   const batches = [
-    { batchID: "001", medicineName: "Paracetamol", orderStatus: "Ordered", quantity: 50 },
+    {
+      batchID: "001",
+      medicineName: "Paracetamol",
+      orderStatus: "Ordered",
+      quantity: 50,
+    },
     // ... other batches
   ];
 

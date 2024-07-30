@@ -1,7 +1,7 @@
 // src/app/dashboard/distributor/page.tsx
 import { useState } from "react";
 import OrderBatchForm from "../distributor/OrderBatchForm";
-import BatchDetailsTable from "../distributor/BatchDetailsTable";
+import BatchDetailsTable from "../distributor/OrderBatchDetailsTable";
 import ProviderOrdersTable from "../distributor/ProviderOrdersTable";
 import StockTable from "../distributor/StockTable";
 import { Button } from "@/components/ui/button";

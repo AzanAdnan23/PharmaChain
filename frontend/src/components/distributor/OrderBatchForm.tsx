@@ -1,9 +1,24 @@
 // src/components/OrderBatchForm.tsx
-import { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { useForm } from 'react-hook-form';
+
+import { useState } from "react";
+import { encodeFunctionData } from "viem";
+import {
+  useAccount,
+  useSendUserOperation,
+  useSmartAccountClient,
+} from "@alchemy/aa-alchemy/react";
+import {
+  accountType,
+  gasManagerConfig,
+  accountClientOptions as opts,
+  ContractAddress,
+  ContractAbi,
+} from "@/config";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useForm } from "react-hook-form";
 
 interface FormData {
   medicineName: string;
@@ -11,13 +26,59 @@ interface FormData {
 }
 
 const OrderBatchForm = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>();
   const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const onSubmit = (data: FormData) => {
-    // Handle form submission logic
-    console.log(data);
-    setSubmitted(true);
+  const { address } = useAccount({ type: accountType });
+  const { client } = useSmartAccountClient({
+    type: accountType,
+    gasManagerConfig,
+    opts,
+  });
+
+  const { sendUserOperation } = useSendUserOperation({
+    client,
+    waitForTxn: true,
+  });
+
+  const onSubmit = async (data: FormData) => {
+    const { medicineName, orderQuantity } = data;
+    if (!client) {
+      console.error("Client not initialized");
+      return;
+    }
+
+    const uoCallData = encodeFunctionData({
+      abi: ContractAbi,
+      functionName: "createDistributorOrder",
+      args: [medicineName, orderQuantity],
+    });
+
+    if (!uoCallData) {
+      console.error("uoCallData is null");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await sendUserOperation({
+        uo: {
+          target: ContractAddress,
+          data: uoCallData,
+        },
+      });
+      console.log("Order created successfully by this address", address);
+      setSubmitted(true);
+    } catch (error) {
+      console.error("Error creating order:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -28,27 +89,47 @@ const OrderBatchForm = () => {
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Medicine Name</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Medicine Name
+            </label>
             <Input
-              {...register('medicineName', { required: 'Medicine name is required' })}
+              {...register("medicineName", {
+                required: "Medicine name is required",
+              })}
               placeholder="Enter medicine name"
               className="mt-1"
             />
-            {errors.medicineName && <p className="text-red-500 text-sm">{errors.medicineName.message}</p>}
+            {errors.medicineName && (
+              <p className="text-sm text-red-500">
+                {errors.medicineName.message}
+              </p>
+            )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Order Quantity</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Order Quantity
+            </label>
             <Input
               type="number"
-              {...register('orderQuantity', { required: 'Order quantity is required' })}
+              {...register("orderQuantity", {
+                required: "Order quantity is required",
+                min: { value: 1, message: "Order quantity must be at least 1" },
+              })}
               placeholder="Enter order quantity"
               className="mt-1"
             />
-            {errors.orderQuantity && <p className="text-red-500 text-sm">{errors.orderQuantity.message}</p>}
+            {errors.orderQuantity && (
+              <p className="text-sm text-red-500">
+                {errors.orderQuantity.message}
+              </p>
+            )}
           </div>
-          {/* <Button type="submit" variant="primary" className="w-full">Place Order</Button> */}
-          <Button type="submit" className="w-full">Place Order</Button>
-          {submitted && <p className="text-green-500 mt-2">Order placed successfully!</p>}
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Placing Order..." : "Place Order"}
+          </Button>
+          {submitted && (
+            <p className="mt-2 text-green-500">Order placed successfully!</p>
+          )}
         </form>
       </CardContent>
     </Card>
