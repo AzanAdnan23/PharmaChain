@@ -26,7 +26,17 @@ interface Order {
   medName: string;
   quantity: number;
   status: string;
+  distributorAddr: string;
 }
+
+// Enum to Status mapping
+const statusMapping: { [key: number]: string } = {
+  0: "Pending",
+  1: "InTransit",
+  2: "Approved",
+  3: "Reached",
+  4: "Recalled",
+};
 
 export default function CurrentOrdersTable() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -53,7 +63,8 @@ export default function CurrentOrdersTable() {
         orderId: Number(order.orderId),
         medName: order.medName,
         quantity: Number(order.quantity),
-        status: order.status,
+        status: statusMapping[order.status] || "Unknown", // Map the status
+        distributorAddr: order.distributor,
       }));
 
       setOrders(formattedOrders);
