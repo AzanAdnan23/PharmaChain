@@ -2,11 +2,6 @@
 
 // for example check is user already registered or not
 
-// bathces ka struct ma isquality disaprove dalna ha
-// get company name from address
-// get orders of distributor from address.
-// fix createDistributorOrder:
-// or jab manufacutrer order assign kr da toh distributor ka struct ma manufacturer ka address dalna ha
-// inventory wala kam karna ha distributor ma b or provider ma b
+//
 
 // how to implement rfid logic from distributor to providers when batches are broken down into units.
