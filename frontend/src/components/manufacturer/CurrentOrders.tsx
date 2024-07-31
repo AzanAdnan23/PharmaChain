@@ -205,12 +205,6 @@ function AssignToDistributorForm({
           data: uoCallData,
         },
       });
-      console.log(
-        "Batch assigned successfully by this address",
-        address,
-        "to this distributor: ",
-        order.distributorAddr,
-      );
     } catch (error) {
       console.error("Error assigning batch:", error);
     } finally {
