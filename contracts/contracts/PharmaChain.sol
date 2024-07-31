@@ -308,7 +308,8 @@ contract PharmaChain {
         address _manufacturer
     ) external view returns (Batch[] memory) {
         uint256 count = 0;
-        for (uint256 i = 0; i < nextBatchId; i++) {
+        for (uint256 i = 100; i < nextBatchId; i++) {
+            // Start from 100
             if (batches[i].manufacturer == _manufacturer) {
                 count++;
             }
@@ -316,7 +317,8 @@ contract PharmaChain {
 
         Batch[] memory createdBatches = new Batch[](count);
         uint256 index = 0;
-        for (uint256 i = 0; i < nextBatchId; i++) {
+        for (uint256 i = 100; i < nextBatchId; i++) {
+            // Start from 100
             if (batches[i].manufacturer == _manufacturer) {
                 createdBatches[index] = batches[i];
                 index++;
@@ -330,7 +332,8 @@ contract PharmaChain {
         address _manufacturer
     ) external view returns (Batch[] memory) {
         uint256 count = 0;
-        for (uint256 i = 0; i < nextBatchId; i++) {
+        for (uint256 i = 100; i < nextBatchId; i++) {
+            // Start from 100
             if (
                 batches[i].manufacturer == _manufacturer &&
                 batches[i].distributor != address(0)
@@ -341,7 +344,8 @@ contract PharmaChain {
 
         Batch[] memory fulfilledBatches = new Batch[](count);
         uint256 index = 0;
-        for (uint256 i = 0; i < nextBatchId; i++) {
+        for (uint256 i = 100; i < nextBatchId; i++) {
+            // Start from 100
             if (
                 batches[i].manufacturer == _manufacturer &&
                 batches[i].distributor != address(0)
@@ -360,7 +364,8 @@ contract PharmaChain {
         returns (DistributorOrder[] memory)
     {
         uint256 count = 0;
-        for (uint256 i = 0; i < nextDistributorOrderId; i++) {
+        for (uint256 i = 100; i < nextDistributorOrderId; i++) {
+            // Start from 100
             if (!distributorOrders[i].isAssigned) {
                 count++;
             }
@@ -368,7 +373,8 @@ contract PharmaChain {
 
         DistributorOrder[] memory pendingOrders = new DistributorOrder[](count);
         uint256 index = 0;
-        for (uint256 i = 0; i < nextDistributorOrderId; i++) {
+        for (uint256 i = 100; i < nextDistributorOrderId; i++) {
+            // Start from 100
             if (!distributorOrders[i].isAssigned) {
                 pendingOrders[index] = distributorOrders[i];
                 index++;
@@ -469,7 +475,8 @@ contract PharmaChain {
         address _distributor
     ) external view returns (DistributorOrder[] memory) {
         uint256 count = 0;
-        for (uint256 i = 0; i < nextDistributorOrderId; i++) {
+        for (uint256 i = 100; i < nextDistributorOrderId; i++) {
+            // Start from 100
             if (distributorOrders[i].distributor == _distributor) {
                 count++;
             }
@@ -477,7 +484,8 @@ contract PharmaChain {
 
         DistributorOrder[] memory orders = new DistributorOrder[](count);
         uint256 index = 0;
-        for (uint256 i = 0; i < nextDistributorOrderId; i++) {
+        for (uint256 i = 100; i < nextDistributorOrderId; i++) {
+            // Start from 100
             if (distributorOrders[i].distributor == _distributor) {
                 orders[index] = distributorOrders[i];
                 index++;
@@ -565,7 +573,8 @@ contract PharmaChain {
         address _provider
     ) external view returns (ProviderOrder[] memory) {
         uint256 count = 0;
-        for (uint256 i = 0; i < nextProviderOrderId; i++) {
+        for (uint256 i = 100; i < nextProviderOrderId; i++) {
+            // Start from 100
             if (providerOrders[i].provider == _provider) {
                 count++;
             }
@@ -573,7 +582,8 @@ contract PharmaChain {
 
         ProviderOrder[] memory orders = new ProviderOrder[](count);
         uint256 index = 0;
-        for (uint256 i = 0; i < nextProviderOrderId; i++) {
+        for (uint256 i = 100; i < nextProviderOrderId; i++) {
+            // Start from 100
             if (providerOrders[i].provider == _provider) {
                 orders[index] = providerOrders[i];
                 index++;
