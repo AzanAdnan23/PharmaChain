@@ -40,11 +40,11 @@ export const LogInCard = () => {
             placeholder="Enter your email"
             value={email}
             onChange={onEmailChange}
-            className="p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100"
+            className="mb-2"
           />
           <Button
             type="submit"
-            className="mt-4 w-full py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mb-4"
           >
             Log in
           </Button>

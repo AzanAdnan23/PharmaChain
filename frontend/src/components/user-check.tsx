@@ -1,5 +1,6 @@
 import React from "react";
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation"; // Import from next/navigation
 import {
   useAccount,
   useSendUserOperation,
@@ -41,6 +42,7 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
 
   const user = useUser();
   const { address } = useAccount({ type: accountType });
+  const router = useRouter(); // Use useRouter from next/navigation
 
   const { client } = useSmartAccountClient({
     type: accountType,
@@ -155,6 +157,7 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
         },
       });
       setIsRegistered(true);
+      router.push(`/dashboard/${role.toLowerCase()}`); // Redirect after successful registration
     } catch (error) {
       console.error("Error registering user:", error);
     } finally {
@@ -162,48 +165,51 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
     }
   };
 
-  if (isCheckingRegistration) {
+  if (isCheckingRegistration || isRegistered === null || isRegistered) {
     return <LoadingSpinner />;
   }
 
   return (
-    <Card>
-      <form className="flex flex-col gap-4">
-        <div className="my-2 flex flex-col gap-4"></div>
+    <Card className="p-6 max-w-md mx-auto shadow-lg">
+      <form className="flex flex-col gap-6" onSubmit={registerUser}>
+        <div className="text-center text-[20px] font-bold text-gray-800 mb-4">
+          Register User
+        </div>
+        <div className="flex flex-col gap-4">
+          <Input
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={onEmailChange}
+            readOnly
+            className="p-3 border border-gray-300 rounded-md"
+          />
+          <Input
+            type="text"
+            placeholder="Enter your company name"
+            value={companyName}
+            onChange={onCompanyNameChange}
+            className="p-3 border border-gray-300 rounded-md"
+          />
+          <select
+            value={role}
+            onChange={onRoleChange}
+            className="p-3 border border-gray-300 rounded-md"
+          >
+            <option value="">Select your role</option>
+            <option value="Manufacturer">Manufacturer</option>
+            <option value="Distributor">Distributor</option>
+            <option value="Provider">Provider</option>
+          </select>
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="mt-4"
+          >
+            {isLoading ? "Loading..." : "Register"}
+          </Button>
+        </div>
       </form>
-      {isRegistered === null ? (
-        <></>
-      ) : isRegistered ? (
-        <></>
-      ) : (
-        <form className="flex flex-col gap-8" onSubmit={registerUser}>
-          <div className="text-[18px] font-semibold">Register User</div>
-          <div className="flex flex-col justify-between gap-6">
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={onEmailChange}
-              readOnly // Make the input read-only if you don't want the user to change it
-            />
-            <Input
-              type="text"
-              placeholder="Enter your company name"
-              value={companyName}
-              onChange={onCompanyNameChange}
-            />
-            <select value={role} onChange={onRoleChange}>
-              <option value="">Select your role</option>
-              <option value="Manufacturer">Manufacturer</option>
-              <option value="Distributor">Distributor</option>
-              <option value="Provider">Provider</option>
-            </select>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Loading..." : "Register"}
-            </Button>
-          </div>
-        </form>
-      )}
     </Card>
   );
 };

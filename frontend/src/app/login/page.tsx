@@ -45,12 +45,7 @@ export default function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
       <div className="w-full max-w-md">
-        <Card>
-          <CardHeader className="text-center">
-            <h1 className="text-2xl font-semibold">Login</h1>
-          </CardHeader>
-          <CardContent className="p-6">
-            {isLoading ? (
+      {isLoading ? (
               <div className="flex justify-center">
                 <LoadingSpinner />
               </div>
@@ -59,8 +54,6 @@ export default function Login() {
             ) : (
               <LogInCard />
             )}
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
