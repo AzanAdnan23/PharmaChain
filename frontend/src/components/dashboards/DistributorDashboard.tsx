@@ -26,33 +26,12 @@ const DistributorDashboard = () => {
       <OrderBatchForm />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Order Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <BatchDetailsTable />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Provider Orders</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ProviderOrdersTable />
-          </CardContent>
-        </Card>
+        <BatchDetailsTable />
+        <ProviderOrdersTable />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Stock</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <StockTable />
-          </CardContent>
-        </Card>
+        <StockTable />
 
         <Card>
           <CardHeader>
