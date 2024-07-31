@@ -26,20 +26,108 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 
-export default function OrdersFulfilledTable() {
-  const orders = [
-    {
-      orderID: "O001",
-      medicineName: "Ibuprofen",
-      quantity: 30,
-      distributor: "Distributor A",
-      status: "Fulfilled",
-    },
-    // ... other orders
-  ];
+interface Batch {
+  batchId: number;
+  manufacturer: string;
+  details: string;
+  isQualityApproved: boolean;
+  isQualityDisapproved: boolean;
+  distributor: string;
+  rfidUIDHash: string;
+  isRecalled: boolean;
+  manufactureDate: number;
+  expiryDate: number;
+  quantity: number;
+}
 
-  const handleRecall = (orderID: string) => {
-    // Handle recall action
+export default function OrdersFulfilledTable() {
+  const [orders, setOrders] = useState<Batch[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isRecallLoading, setIsRecallLoading] = useState<boolean>(false); // Loading state for recall
+
+  const { address } = useAccount({ type: accountType });
+
+  const fetchFullfiledOrders = async () => {
+    if (!address) return;
+
+    const PharmaChain = getContract({
+      address: ContractAddress,
+      abi: ContractAbi,
+      client: publicClient,
+    });
+
+    setIsLoading(true);
+    try {
+      const result = await PharmaChain.read.getFulfilledBatches([address]);
+      console.log("Getting Fulfilled Orders", result);
+
+      const formattedOrders = (result as any[]).map((batch) => ({
+        batchId: Number(batch.batchId),
+        manufacturer: batch.manufacturer,
+        details: batch.details,
+        isQualityApproved: batch.isQualityApproved,
+        isQualityDisapproved: batch.isQualityDisapproved,
+        distributor: batch.distributor,
+        rfidUIDHash: batch.rfidUIDHash,
+        isRecalled: batch.isRecalled,
+        manufactureDate: Number(batch.manufactureDate),
+        expiryDate: Number(batch.expiryDate),
+        quantity: Number(batch.quantity),
+      }));
+
+      setOrders(formattedOrders);
+    } catch (error) {
+      console.error("Error fetching fulfilled orders:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFullfiledOrders();
+  }, [address]);
+
+  const handleRecall = async (batchId: number) => {
+    setIsRecallLoading(true);
+    try {
+      const { client } = useSmartAccountClient({
+        type: accountType,
+        gasManagerConfig,
+        opts,
+      });
+      const {
+        sendUserOperation,
+        sendUserOperationResult,
+        isSendingUserOperation,
+        error: isSendUserOperationError,
+      } = useSendUserOperation({ client, waitForTxn: true });
+
+      const uoCallData = client
+        ? encodeFunctionData({
+            abi: ContractAbi,
+            functionName: "recallBatch",
+            args: [batchId],
+          })
+        : null;
+      if (!client || !uoCallData) {
+        console.error("Client not initialized or uoCallData is null");
+        return;
+      }
+
+      await sendUserOperation({
+        uo: {
+          target: ContractAddress,
+          data: uoCallData,
+        },
+      });
+
+      console.log("Batch recalled successfully");
+      fetchFullfiledOrders(); // Refresh the orders list after recall
+    } catch (error) {
+      console.error("Error recalling batch:", error);
+    } finally {
+      setIsRecallLoading(false);
+    }
   };
 
   return (
@@ -48,34 +136,51 @@ export default function OrdersFulfilledTable() {
         <CardTitle>Orders Fulfilled</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Order ID</TableHead>
-              <TableHead>Medicine Name</TableHead>
-              <TableHead>Quantity</TableHead>
-              <TableHead>Distributor</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders.map((order) => (
-              <TableRow key={order.orderID}>
-                <TableCell>{order.orderID}</TableCell>
-                <TableCell>{order.medicineName}</TableCell>
-                <TableCell>{order.quantity}</TableCell>
-                <TableCell>{order.distributor}</TableCell>
-                <TableCell>{order.status}</TableCell>
-                <TableCell>
-                  <Button onClick={() => handleRecall(order.orderID)}>
-                    Recall
-                  </Button>
-                </TableCell>
+        {isLoading ? (
+          <p>Loading...</p> // Show a loading message while fetching data
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Batch ID</TableHead>
+
+                <TableHead>Details</TableHead>
+                <TableHead>Quantity</TableHead>
+                <TableHead>Distributor</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {orders.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7}>No fulfilled orders found.</TableCell>
+                </TableRow>
+              ) : (
+                orders.map((order) => (
+                  <TableRow key={order.batchId}>
+                    <TableCell>{order.batchId}</TableCell>
+
+                    <TableCell>{order.details}</TableCell>
+                    <TableCell>{order.quantity}</TableCell>
+                    <TableCell>{order.distributor}</TableCell>
+                    <TableCell>
+                      {order.isRecalled ? "Recalled" : "Not Recalled"}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        onClick={() => handleRecall(order.batchId)}
+                        disabled={isRecallLoading}
+                      >
+                        {isRecallLoading ? "Recalling..." : "Recall"}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
     </Card>
   );
