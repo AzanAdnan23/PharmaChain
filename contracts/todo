@@ -1,14 +1,9 @@
-// manufacturer order fullfilled from  an address
+// fix the status thingy of distributor
+// assign to distreibutor should change the status in batch struct an distributor batch struct
 
-
-
-
-
-
-
-
-
-
+// get distributor batch status function from
+// get  company name from address
+// order fullfiled date
 
 // all checks and error handling pending
 
@@ -16,6 +11,6 @@
 
 //
 
-//bari bari sab ka satus dakhna update ho raha ka nai for every function
+// bari bari sab ka satus dakhna update ho raha ka nai for every function
 
 // how to implement rfid logic from distributor to providers when batches are broken down into units.
