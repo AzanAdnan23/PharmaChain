@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-// 0x3170fE055Ccd814bD8a495AD69F33aAB59858F9F
+//0x7D5157031399dCa98Af1d16a225d9c237aA7afA8
 contract PharmaChain {
     enum Role {
         Manufacturer,
@@ -303,6 +303,34 @@ contract PharmaChain {
         }
 
         return createdBatches;
+    }
+
+    function getFulfilledBatches(
+        address _manufacturer
+    ) external view returns (Batch[] memory) {
+        uint256 count = 0;
+        for (uint256 i = 0; i < nextBatchId; i++) {
+            if (
+                batches[i].manufacturer == _manufacturer &&
+                batches[i].distributor != address(0)
+            ) {
+                count++;
+            }
+        }
+
+        Batch[] memory fulfilledBatches = new Batch[](count);
+        uint256 index = 0;
+        for (uint256 i = 0; i < nextBatchId; i++) {
+            if (
+                batches[i].manufacturer == _manufacturer &&
+                batches[i].distributor != address(0)
+            ) {
+                fulfilledBatches[index] = batches[i];
+                index++;
+            }
+        }
+
+        return fulfilledBatches;
     }
 
     function getPendingDistributorOrders()

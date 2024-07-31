@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react";
-import { getContract } from "viem";
-import { useAccount } from "@alchemy/aa-alchemy/react";
+import { getContract, encodeFunctionData } from "viem";
+
+import {
+  useAccount,
+  useSendUserOperation,
+  useSmartAccountClient,
+} from "@alchemy/aa-alchemy/react";
 import {
   accountType,
+  gasManagerConfig,
+  accountClientOptions as opts,
   ContractAddress,
   ContractAbi,
   publicClient,
@@ -79,11 +86,13 @@ export default function CurrentOrdersTable() {
     fetchPendingOrders();
   }, [address]);
 
-  const handleAssign = async (
-    orderId: number,
-    batchId: string,
-    distributorAddress: string,
-  ) => {
+  const handleAssign = async (orderId: number, batchId: string) => {
+    // Find the selected order's distributor address
+    const selectedOrder = orders.find((order) => order.orderId === orderId);
+    if (!selectedOrder) return;
+
+    const distributorAddress = selectedOrder.distributorAddr;
+
     // Implement the logic to assign the order
     console.log(
       `Assigning Order ID ${orderId} to Distributor ${distributorAddress} with Batch ID ${batchId}`,
@@ -154,18 +163,54 @@ function AssignToDistributorForm({
 }: {
   order: Order;
   onClose: () => void;
-  onAssign: (
-    orderId: number,
-    batchId: string,
-    distributorAddress: string,
-  ) => void;
+  onAssign: (orderId: number, batchId: string) => void;
 }) {
   const [batchID, setBatchID] = useState("");
-  const [distributorAddress, setDistributorAddress] = useState("");
+  const [isLoading, setIsLoading] = useState<boolean>(false); // Local loading state
+
+  const { address } = useAccount({ type: accountType });
+  const { client } = useSmartAccountClient({
+    type: accountType,
+    gasManagerConfig,
+    opts,
+  });
+  const {
+    sendUserOperation,
+    sendUserOperationResult,
+    isSendingUserOperation,
+    error: isSendUserOperationError,
+  } = useSendUserOperation({ client, waitForTxn: true });
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    await onAssign(order.orderId, batchID, distributorAddress);
+    setIsLoading(true);
+    try {
+      await onAssign(order.orderId, batchID);
+
+      const uoCallData = client
+        ? encodeFunctionData({
+            abi: ContractAbi,
+            functionName: "assignToDistributor",
+            args: [batchID, order.distributorAddr],
+          })
+        : null;
+      if (!client || !uoCallData) {
+        console.error("Client not initialized or uoCallData is null");
+        return;
+      }
+
+      await sendUserOperation({
+        uo: {
+          target: ContractAddress,
+          data: uoCallData,
+        },
+      });
+    } catch (error) {
+      console.error("Error assigning batch:", error);
+    } finally {
+      setIsLoading(false);
+    }
+
     onClose(); // Close the form after submission
   };
 
@@ -182,15 +227,10 @@ function AssignToDistributorForm({
             value={batchID}
             onChange={(e) => setBatchID(e.target.value)}
             className="mb-2"
+            disabled={isLoading} // Disable input if loading
           />
-          <Input
-            type="text"
-            placeholder="Distributor Address"
-            value={distributorAddress}
-            onChange={(e) => setDistributorAddress(e.target.value)}
-          />
-          <Button type="submit" className="mt-4">
-            Assign
+          <Button type="submit" className="mt-4" disabled={isLoading}>
+            {isLoading ? "Assigning..." : "Assign"}
           </Button>
           <Button type="button" onClick={onClose} className="ml-2">
             Cancel
