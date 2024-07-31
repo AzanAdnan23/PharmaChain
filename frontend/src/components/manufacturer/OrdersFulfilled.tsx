@@ -143,10 +143,11 @@ export default function OrdersFulfilledTable() {
             <TableHeader>
               <TableRow>
                 <TableHead>Batch ID</TableHead>
-
                 <TableHead>Details</TableHead>
                 <TableHead>Quantity</TableHead>
                 <TableHead>Distributor</TableHead>
+                <TableHead>Order Date</TableHead>
+                <TableHead>Order Approved Date</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>

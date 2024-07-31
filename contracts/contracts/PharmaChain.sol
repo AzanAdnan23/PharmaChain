@@ -29,20 +29,14 @@ contract PharmaChain {
         address manufacturer;
         string details;
         bool isQualityApproved;
-        bool isQualityDisapproved; // Added: Quality disapproval status
+        bool isQualityDisapproved;
         address distributor;
         bytes32 rfidUIDHash;
         bool isRecalled;
         uint256 manufactureDate;
         uint256 expiryDate;
         uint256 quantity;
-    }
-
-    struct BatchUnit {
-        uint256 unitId;
-        uint256 batchId;
-        address provider;
-        bool isAssigned;
+        uint256 orderId; // New field
     }
 
     struct DistributorOrder {
@@ -50,11 +44,19 @@ contract PharmaChain {
         address distributor;
         address manufacturer;
         uint256 orderDate;
-        uint256 batchId; // Batch to be assigned by the manufacturer
-        string medName; // Changed: Added medication name
-        uint256 quantity; // Changed: Added quantity
+        uint256 batchId;
+        string medName;
+        uint256 quantity;
         bool isAssigned;
         OrderStatus status;
+        uint256 orderApprovedDate; // New field
+    }
+
+    struct BatchUnit {
+        uint256 unitId;
+        uint256 batchId;
+        address provider;
+        bool isAssigned;
     }
 
     struct ProviderOrder {
@@ -85,10 +87,10 @@ contract PharmaChain {
     mapping(address => string[]) public distributorMedNames; // List of medication names for distributor
     mapping(address => string[]) public providerMedNames; // List of medication names for provider
 
-    uint256 public nextBatchId;
-    uint256 public nextUnitId;
-    uint256 public nextDistributorOrderId;
-    uint256 public nextProviderOrderId;
+    uint256 public nextBatchId = 100;
+    uint256 public nextUnitId = 100;
+    uint256 public nextDistributorOrderId = 100;
+    uint256 public nextProviderOrderId = 100;
 
     event UserRegistered(
         address indexed user,
@@ -188,6 +190,12 @@ contract PharmaChain {
         return users[_user].companyName; // Get company name from the address
     }
 
+    function getUserByAddress(
+        address _user
+    ) external view returns (User memory) {
+        return users[_user];
+    }
+
     // MANUFACTURER FUNCTIONS
     function createBatch(
         string memory _details,
@@ -214,7 +222,8 @@ contract PharmaChain {
             isRecalled: false,
             manufactureDate: block.timestamp,
             expiryDate: _expiryDate,
-            quantity: _quantity
+            quantity: _quantity,
+            orderId: 0
         });
 
         emit BatchCreated(
@@ -268,7 +277,8 @@ contract PharmaChain {
 
     function assignToDistributor(
         uint256 _batchId,
-        address _distributor
+        address _distributor,
+        uint256 _orderId
     ) external onlyManufacturer {
         require(
             users[_distributor].role == Role.Distributor,
@@ -279,6 +289,17 @@ contract PharmaChain {
         require(batch.isQualityApproved, "Batch must be quality approved");
 
         batch.distributor = _distributor;
+        batch.orderId = _orderId; // Set order ID in batch
+
+        DistributorOrder storage order = distributorOrders[_orderId];
+        require(
+            order.batchId == _batchId,
+            "Order must be assigned to this batch"
+        );
+
+        order.manufacturer = msg.sender;
+        order.status = OrderStatus.Approved;
+        order.orderApprovedDate = block.timestamp; // Update approved date
 
         emit BatchAssignedToDistributor(_batchId, _distributor);
     }
@@ -373,7 +394,8 @@ contract PharmaChain {
             medName: _medName,
             quantity: _quantity,
             isAssigned: false,
-            status: OrderStatus.Pending
+            status: OrderStatus.Pending,
+            orderApprovedDate: 0
         });
     }
 
@@ -422,6 +444,13 @@ contract PharmaChain {
                 distributorMedNames[msg.sender].push(order.medName);
             }
         }
+    }
+
+    function getDistributorOrderStatus(
+        uint256 _orderId
+    ) external view returns (OrderStatus, uint256) {
+        DistributorOrder storage order = distributorOrders[_orderId];
+        return (order.status, order.orderApprovedDate); // Return status and approved date
     }
 
     function assignUnitToProvider(
