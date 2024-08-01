@@ -43,7 +43,7 @@ interface Batch {
 export default function OrdersFulfilledTable() {
   const [orders, setOrders] = useState<Batch[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isRecallLoading, setIsRecallLoading] = useState<boolean>(false); // Loading state for recall
+  const [isRecallLoading, setIsRecallLoading] = useState<boolean>(false);
 
   const { address } = useAccount({ type: accountType });
 
@@ -137,7 +137,7 @@ export default function OrdersFulfilledTable() {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <p>Loading...</p> // Show a loading message while fetching data
+          <p>Loading...</p>
         ) : (
           <Table>
             <TableHeader>

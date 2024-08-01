@@ -92,11 +92,6 @@ export default function CurrentOrdersTable() {
     if (!selectedOrder) return;
 
     const distributorAddress = selectedOrder.distributorAddr;
-
-    // Implement the logic to assign the order
-    console.log(
-      `Assigning Order ID ${orderId} to Distributor ${distributorAddress} with Batch ID ${batchId}`,
-    );
   };
 
   return (
@@ -181,30 +176,38 @@ function AssignToDistributorForm({
     error: isSendUserOperationError,
   } = useSendUserOperation({ client, waitForTxn: true });
 
+  console.log(
+    " Assigning batch thingies",
+    batchID,
+    order.distributorAddr,
+    order.orderId,
+  );
+
+  const uoCallData = client
+    ? encodeFunctionData({
+        abi: ContractAbi,
+        functionName: "assignToDistributor",
+        args: [batchID, order.distributorAddr, order.orderId],
+      })
+    : null;
+  if (!client || !uoCallData) {
+    console.error("Client not initialized or uoCallData is null");
+    return;
+  }
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsLoading(true);
+    await onAssign(order.orderId, batchID);
+
     try {
-      await onAssign(order.orderId, batchID);
-
-      const uoCallData = client
-        ? encodeFunctionData({
-            abi: ContractAbi,
-            functionName: "assignToDistributor",
-            args: [batchID, order.distributorAddr],
-          })
-        : null;
-      if (!client || !uoCallData) {
-        console.error("Client not initialized or uoCallData is null");
-        return;
-      }
-
-      await sendUserOperation({
+      sendUserOperation({
         uo: {
           target: ContractAddress,
           data: uoCallData,
         },
       });
+      console.log("Order assigned successfully", isSendUserOperationError);
     } catch (error) {
       console.error("Error assigning batch:", error);
     } finally {
