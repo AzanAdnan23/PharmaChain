@@ -14,6 +14,7 @@ import {
   ContractAbi,
   publicClient,
 } from "@/config";
+import { LoadingSpinner } from "../ui/loading-spinner";
 
 import {
   Table,
@@ -24,9 +25,8 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Input } from "@/components/ui/input";
-import { LoadingSpinner } from "../ui/loading-spinner";
 
 interface Order {
   orderId: number;
@@ -86,12 +86,8 @@ export default function CurrentOrdersTable() {
     fetchPendingOrders();
   }, [address]);
 
-  const handleAssign = async (orderId: number, batchId: string) => {
-    // Find the selected order's distributor address
-    const selectedOrder = orders.find((order) => order.orderId === orderId);
-    if (!selectedOrder) return;
-
-    const distributorAddress = selectedOrder.distributorAddr;
+  const handleAssign = (order: Order) => {
+    setSelectedOrder(order);
   };
 
   return (
@@ -100,50 +96,39 @@ export default function CurrentOrdersTable() {
         <CardTitle>Current Orders</CardTitle>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <LoadingSpinner /> // Show a loading spinner while fetching data
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Order ID</TableHead>
-                <TableHead>Medicine Name</TableHead>
-                <TableHead>Quantity</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Order ID</TableHead>
+              <TableHead>Medicine Name</TableHead>
+              <TableHead>Quantity</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {orders.map((order) => (
+              <TableRow
+                key={order.orderId}
+                onClick={() => setSelectedOrder(order)}
+              >
+                <TableCell>{order.orderId}</TableCell>
+                <TableCell>{order.medName}</TableCell>
+                <TableCell>{order.quantity}</TableCell>
+                <TableCell>{order.status}</TableCell>
+                <TableCell>
+                  <Button onClick={() => handleAssign(order)}>
+                    Assign to Distributor
+                  </Button>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5}>No pending orders found.</TableCell>
-                </TableRow>
-              ) : (
-                orders.map((order) => (
-                  <TableRow
-                    key={order.orderId}
-                    onClick={() => setSelectedOrder(order)}
-                  >
-                    <TableCell>{order.orderId}</TableCell>
-                    <TableCell>{order.medName}</TableCell>
-                    <TableCell>{order.quantity}</TableCell>
-                    <TableCell>{order.status}</TableCell>
-                    <TableCell>
-                      <Button onClick={() => setSelectedOrder(order)}>
-                        Assign to Distributor
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        )}
+            ))}
+          </TableBody>
+        </Table>
         {selectedOrder && (
           <AssignToDistributorForm
             order={selectedOrder}
             onClose={() => setSelectedOrder(null)}
-            onAssign={handleAssign}
           />
         )}
       </CardContent>
@@ -154,67 +139,61 @@ export default function CurrentOrdersTable() {
 function AssignToDistributorForm({
   order,
   onClose,
-  onAssign,
 }: {
   order: Order;
   onClose: () => void;
-  onAssign: (orderId: number, batchId: string) => void;
 }) {
   const [batchID, setBatchID] = useState("");
-  const [isLoading, setIsLoading] = useState<boolean>(false); // Local loading state
 
-  const { address } = useAccount({ type: accountType });
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const { client } = useSmartAccountClient({
     type: accountType,
     gasManagerConfig,
     opts,
   });
+
   const {
     sendUserOperation,
-    sendUserOperationResult,
     isSendingUserOperation,
     error: isSendUserOperationError,
   } = useSendUserOperation({ client, waitForTxn: true });
 
-  console.log(
-    " Assigning batch thingies",
-    batchID,
-    order.distributorAddr,
-    order.orderId,
-  );
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const uoCallData = client
-    ? encodeFunctionData({
-        abi: ContractAbi,
-        functionName: "assignToDistributor",
-        args: [batchID, order.distributorAddr, order.orderId],
-      })
-    : null;
-  if (!client || !uoCallData) {
-    console.error("Client not initialized or uoCallData is null");
-    return;
-  }
+    const uoCallData = encodeFunctionData({
+      abi: ContractAbi,
+      functionName: "assignToDistributor",
+      args: [batchID, order.distributorAddr, order.orderId],
+    });
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+    if (!client || !uoCallData) {
+      console.error("Client not initialized or uoCallData is null");
+      return;
+    }
+
     setIsLoading(true);
-    await onAssign(order.orderId, batchID);
-
     try {
-      sendUserOperation({
+      await sendUserOperation({
         uo: {
           target: ContractAddress,
           data: uoCallData,
         },
       });
-      console.log("Order assigned successfully", isSendUserOperationError);
+      console.log("Batch Assigned to Distributor", order.distributorAddr);
+      console.log(
+        "Assigning batch:",
+        batchID,
+        order.distributorAddr,
+        order.orderId,
+      );
     } catch (error) {
-      console.error("Error assigning batch:", error);
+      console.error("Error assigning batch to distributor:", error);
     } finally {
       setIsLoading(false);
     }
-
-    onClose(); // Close the form after submission
+    onClose();
   };
 
   return (
@@ -230,10 +209,9 @@ function AssignToDistributorForm({
             value={batchID}
             onChange={(e) => setBatchID(e.target.value)}
             className="mb-2"
-            disabled={isLoading} // Disable input if loading
           />
           <Button type="submit" className="mt-4" disabled={isLoading}>
-            {isLoading ? "Assigning..." : "Assign"}
+            {isLoading ? <LoadingSpinner /> : "Assign"}
           </Button>
           <Button type="button" onClick={onClose} className="ml-2">
             Cancel

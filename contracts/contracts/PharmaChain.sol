@@ -287,15 +287,18 @@ contract PharmaChain {
 
         Batch storage batch = batches[_batchId];
         require(batch.isQualityApproved, "Batch must be quality approved");
+        require(batch.distributor == address(0), "Batch already assigned");
+
+        DistributorOrder storage order = distributorOrders[_orderId];
+        require(order.batchId == 0, "Order is already assigned to a batch");
+        require(
+            order.quantity <= batch.quantity,
+            "Order quantity exceeds batch quantity"
+        );
 
         batch.distributor = _distributor;
         batch.orderId = _orderId; // Set order ID in batch
-
-        DistributorOrder storage order = distributorOrders[_orderId];
-        require(
-            order.batchId == _batchId,
-            "Order must be assigned to this batch"
-        );
+        order.batchId = _batchId; // Assign the batch to the order
 
         order.manufacturer = msg.sender;
         order.status = OrderStatus.Approved;
@@ -403,30 +406,6 @@ contract PharmaChain {
             status: OrderStatus.Pending,
             orderApprovedDate: 0
         });
-    }
-
-    function assignBatchToOrder(
-        uint256 _orderId,
-        uint256 _batchId
-    ) external onlyManufacturer {
-        DistributorOrder storage order = distributorOrders[_orderId];
-        require(
-            order.manufacturer == address(0) ||
-                order.manufacturer == msg.sender,
-            "Only the order's manufacturer can assign the batch"
-        );
-
-        Batch storage batch = batches[_batchId];
-        require(batch.manufacturer == msg.sender, "Invalid manufacturer");
-        require(
-            batch.quantity >= order.quantity,
-            "Insufficient batch quantity"
-        );
-
-        order.batchId = _batchId;
-        order.manufacturer = msg.sender;
-        order.isAssigned = true;
-        order.status = OrderStatus.InTransit;
     }
 
     function updateDistributorOrderStatus(
