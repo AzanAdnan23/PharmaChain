@@ -66,13 +66,16 @@ export default function CurrentOrdersTable() {
       const result = await PharmaChain.read.getPendingDistributorOrders();
       console.log("Getting Pending Orders", result);
 
-      const formattedOrders = (result as any[]).map((order) => ({
-        orderId: Number(order.orderId),
-        medName: order.medName,
-        quantity: Number(order.quantity),
-        status: statusMapping[order.status] || "Unknown", // Map the status
-        distributorAddr: order.distributor,
-      }));
+      // Map and filter orders to show only pending ones
+      const formattedOrders = (result as any[])
+        .map((order) => ({
+          orderId: Number(order.orderId),
+          medName: order.medName,
+          quantity: Number(order.quantity),
+          status: statusMapping[order.status] || "Unknown", // Map the status
+          distributorAddr: order.distributor,
+        }))
+        .filter((order) => order.status === "Pending"); // Filter pending orders
 
       setOrders(formattedOrders);
     } catch (error) {
