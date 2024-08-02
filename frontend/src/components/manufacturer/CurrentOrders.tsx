@@ -184,7 +184,7 @@ function AssignToDistributorForm({
           data: uoCallData,
         },
       });
-      console.log("Batch Assigned to Distributor", order.distributorAddr);
+
       console.log(
         "Assigning batch:",
         batchID,

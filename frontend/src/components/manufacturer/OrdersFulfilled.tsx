@@ -38,6 +38,7 @@ interface Batch {
   manufactureDate: number;
   expiryDate: number;
   quantity: number;
+  orderId: number;
 }
 
 export default function OrdersFulfilledTable() {
@@ -73,6 +74,7 @@ export default function OrdersFulfilledTable() {
         manufactureDate: Number(batch.manufactureDate),
         expiryDate: Number(batch.expiryDate),
         quantity: Number(batch.quantity),
+        orderId: Number(batch.orderId),
       }));
 
       setOrders(formattedOrders);
@@ -166,7 +168,7 @@ export default function OrdersFulfilledTable() {
                     <TableCell>{order.quantity}</TableCell>
                     <TableCell>{order.distributor}</TableCell>
                     <TableCell>
-                      {order.isRecalled ? "Recalled" : "Not Recalled"}
+                      {order.isRecalled ? "Recalled" : "Aproved"}
                     </TableCell>
                     <TableCell>
                       <Button
