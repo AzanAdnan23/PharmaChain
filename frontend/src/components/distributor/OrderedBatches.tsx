@@ -86,7 +86,7 @@ export default function CreatedOrderBatches() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Order Details</CardTitle>
+        <CardTitle>Current Order Details</CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
