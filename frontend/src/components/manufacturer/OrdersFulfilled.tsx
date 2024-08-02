@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { getContract, encodeFunctionData } from "viem";
-
 import {
   useAccount,
   useSendUserOperation,
@@ -14,7 +13,6 @@ import {
   ContractAbi,
   publicClient,
 } from "@/config";
-
 import {
   Table,
   TableHeader,
@@ -38,14 +36,49 @@ interface Batch {
   manufactureDate: number;
   expiryDate: number;
   quantity: number;
+  orderId: number;
+}
+
+interface DistributorOrder {
+  orderId: number;
+  distributor: string;
+  manufacturer: string;
+  orderDate: number;
+  batchId: number;
+  medName: string;
+  quantity: number;
+  isAssigned: boolean;
+  status: string;
+  orderApprovedDate: number;
+}
+
+interface DistributorInfo {
+  companyName: string;
+  contactInfo: string; // Assuming this is the email
 }
 
 export default function OrdersFulfilledTable() {
+  // Define all hooks at the top level
+  const { address } = useAccount({ type: accountType });
+  const { client } = useSmartAccountClient({
+    type: accountType,
+    gasManagerConfig,
+    opts,
+  });
+  const { sendUserOperation, isSendingUserOperation } = useSendUserOperation({
+    client,
+    waitForTxn: true,
+  });
+
   const [orders, setOrders] = useState<Batch[]>([]);
+  const [distributorOrders, setDistributorOrders] = useState<{
+    [key: number]: DistributorOrder;
+  }>({});
+  const [distributorInfo, setDistributorInfo] = useState<{
+    [key: string]: DistributorInfo;
+  }>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isRecallLoading, setIsRecallLoading] = useState<boolean>(false);
-
-  const { address } = useAccount({ type: accountType });
 
   const fetchFullfiledOrders = async () => {
     if (!address) return;
@@ -73,13 +106,74 @@ export default function OrdersFulfilledTable() {
         manufactureDate: Number(batch.manufactureDate),
         expiryDate: Number(batch.expiryDate),
         quantity: Number(batch.quantity),
+        orderId: Number(batch.orderId),
       }));
 
       setOrders(formattedOrders);
+
+      // Fetch distributor order details and distributor info for each batch
+      for (const order of formattedOrders) {
+        fetchDistributorOrder(order.orderId);
+        fetchDistributorInfo(order.distributor);
+      }
     } catch (error) {
       console.error("Error fetching fulfilled orders:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchDistributorOrder = async (orderId: number) => {
+    try {
+      const PharmaChain = getContract({
+        address: ContractAddress,
+        abi: ContractAbi,
+        client: publicClient,
+      });
+
+      const result: any = await PharmaChain.read.getDistributorOrder([orderId]);
+      const resultDistributor: DistributorOrder = {
+        orderId: Number(result.orderId),
+        distributor: result.distributor,
+        manufacturer: result.manufacturer,
+        orderDate: Number(result.orderDate),
+        batchId: Number(result.batchId),
+        medName: result.medName,
+        quantity: Number(result.quantity),
+        isAssigned: result.isAssigned,
+        status: result.status,
+        orderApprovedDate: Number(result.orderApprovedDate),
+      };
+
+      setDistributorOrders((prevOrders) => ({
+        ...prevOrders,
+        [orderId]: resultDistributor,
+      }));
+    } catch (error) {
+      console.error("Error fetching distributor order:", error);
+    }
+  };
+
+  const fetchDistributorInfo = async (distributorAddress: string) => {
+    try {
+      const PharmaChain = getContract({
+        address: ContractAddress,
+        abi: ContractAbi,
+        client: publicClient,
+      });
+
+      const result = await PharmaChain.read.getUserInfo([distributorAddress]);
+      const [companyName, contactInfo]: [string, string] = result as [
+        string,
+        string,
+      ];
+
+      setDistributorInfo((prevInfo) => ({
+        ...prevInfo,
+        [distributorAddress]: { companyName, contactInfo },
+      }));
+    } catch (error) {
+      console.error("Error fetching distributor info:", error);
     }
   };
 
@@ -90,29 +184,16 @@ export default function OrdersFulfilledTable() {
   const handleRecall = async (batchId: number) => {
     setIsRecallLoading(true);
     try {
-      const { client } = useSmartAccountClient({
-        type: accountType,
-        gasManagerConfig,
-        opts,
-      });
-      const {
-        sendUserOperation,
-        sendUserOperationResult,
-        isSendingUserOperation,
-        error: isSendUserOperationError,
-      } = useSendUserOperation({ client, waitForTxn: true });
-
-      const uoCallData = client
-        ? encodeFunctionData({
-            abi: ContractAbi,
-            functionName: "recallBatch",
-            args: [batchId],
-          })
-        : null;
-      if (!client || !uoCallData) {
-        console.error("Client not initialized or uoCallData is null");
+      if (!client) {
+        console.error("Client not initialized");
         return;
       }
+
+      const uoCallData = encodeFunctionData({
+        abi: ContractAbi,
+        functionName: "recallBatch",
+        args: [batchId],
+      });
 
       await sendUserOperation({
         uo: {
@@ -148,7 +229,6 @@ export default function OrdersFulfilledTable() {
                 <TableHead>Distributor</TableHead>
                 <TableHead>Order Date</TableHead>
                 <TableHead>Order Approved Date</TableHead>
-                <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -161,20 +241,48 @@ export default function OrdersFulfilledTable() {
                 orders.map((order) => (
                   <TableRow key={order.batchId}>
                     <TableCell>{order.batchId}</TableCell>
-
                     <TableCell>{order.details}</TableCell>
                     <TableCell>{order.quantity}</TableCell>
-                    <TableCell>{order.distributor}</TableCell>
                     <TableCell>
-                      {order.isRecalled ? "Recalled" : "Not Recalled"}
+                      {distributorInfo[order.distributor] ? (
+                        <>
+                          <div>
+                            {distributorInfo[order.distributor].companyName}
+                          </div>
+                          <div>
+                            {distributorInfo[order.distributor].contactInfo}
+                          </div>
+                        </>
+                      ) : (
+                        "Loading..."
+                      )}
                     </TableCell>
                     <TableCell>
-                      <Button
-                        onClick={() => handleRecall(order.batchId)}
-                        disabled={isRecallLoading}
-                      >
-                        {isRecallLoading ? "Recalling..." : "Recall"}
-                      </Button>
+                      {distributorOrders[order.orderId]
+                        ? new Date(
+                            distributorOrders[order.orderId].orderDate * 1000,
+                          ).toLocaleString()
+                        : "Loading..."}
+                    </TableCell>
+                    <TableCell>
+                      {distributorOrders[order.orderId]
+                        ? new Date(
+                            distributorOrders[order.orderId].orderApprovedDate *
+                              1000,
+                          ).toLocaleString()
+                        : "Loading..."}
+                    </TableCell>
+                    <TableCell>
+                      {order.isRecalled ? (
+                        <span>Recalled</span>
+                      ) : (
+                        <Button
+                          onClick={() => handleRecall(order.batchId)}
+                          disabled={isRecallLoading}
+                        >
+                          {isRecallLoading ? "Recalling..." : "Recall"}
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))

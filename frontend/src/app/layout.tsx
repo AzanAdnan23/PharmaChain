@@ -9,8 +9,8 @@ import { config } from "@/config";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Embedded Accounts Getting Started",
-  description: "Embedded Accounts Quickstart Guide",
+  title: "PharmaChain",
+  description: "Supply chain management for pharmaceuticals",
 };
 
 // [!region root-layout]

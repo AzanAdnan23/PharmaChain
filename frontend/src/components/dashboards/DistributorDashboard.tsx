@@ -2,6 +2,7 @@
 import { useState } from "react";
 import OrderBatchForm from "../distributor/OrderBatchForm";
 import BatchDetailsTable from "../distributor/OrderedBatches";
+import FulfilledDistributorsOrdersTable from "../distributor/FullfiledDistributorsOrders";
 import ProviderOrdersTable from "../distributor/ProviderOrdersTable";
 import StockTable from "../distributor/StockTable";
 import { Button } from "@/components/ui/button";
@@ -27,12 +28,12 @@ const DistributorDashboard = () => {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
         <BatchDetailsTable />
-        <ProviderOrdersTable />
+        <StockTable />
       </div>
+      <FulfilledDistributorsOrdersTable />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-        <StockTable />
-
+        <ProviderOrdersTable />
         <Card>
           <CardHeader>
             <CardTitle>RFID Scanning</CardTitle>

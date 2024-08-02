@@ -431,11 +431,12 @@ contract PharmaChain {
         }
     }
 
-    function getDistributorOrderStatus(
+    function getDistributorOrder(
         uint256 _orderId
-    ) external view returns (OrderStatus, uint256) {
+    ) external view returns (DistributorOrder memory) {
         DistributorOrder storage order = distributorOrders[_orderId];
-        return (order.status, order.orderApprovedDate); // Return status and approved date
+        require(order.orderId != 0, "Order does not exist");
+        return order;
     }
 
     function assignUnitToProvider(
