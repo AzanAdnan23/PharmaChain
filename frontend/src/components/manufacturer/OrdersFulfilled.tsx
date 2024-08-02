@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { getContract, encodeFunctionData } from "viem";
-
 import {
   useAccount,
   useSendUserOperation,
@@ -14,7 +13,6 @@ import {
   ContractAbi,
   publicClient,
 } from "@/config";
-
 import {
   Table,
   TableHeader,
@@ -41,8 +39,24 @@ interface Batch {
   orderId: number;
 }
 
+interface DistributorOrder {
+  orderId: number;
+  distributor: string;
+  manufacturer: string;
+  orderDate: number;
+  batchId: number;
+  medName: string;
+  quantity: number;
+  isAssigned: boolean;
+  status: string;
+  orderApprovedDate: number;
+}
+
 export default function OrdersFulfilledTable() {
   const [orders, setOrders] = useState<Batch[]>([]);
+  const [distributorOrders, setDistributorOrders] = useState<{
+    [key: number]: DistributorOrder;
+  }>({}); // Store distributor order details
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isRecallLoading, setIsRecallLoading] = useState<boolean>(false);
 
@@ -78,10 +92,46 @@ export default function OrdersFulfilledTable() {
       }));
 
       setOrders(formattedOrders);
+
+      // Fetch distributor order details for each batch
+      for (const order of formattedOrders) {
+        fetchDistributorOrder(order.orderId);
+      }
     } catch (error) {
       console.error("Error fetching fulfilled orders:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchDistributorOrder = async (orderId: number) => {
+    try {
+      const PharmaChain = getContract({
+        address: ContractAddress,
+        abi: ContractAbi,
+        client: publicClient,
+      });
+
+      const result: any = await PharmaChain.read.getDistributorOrder([orderId]);
+      const resultDistributor: DistributorOrder = {
+        orderId: Number(result.orderId),
+        distributor: result.distributor,
+        manufacturer: result.manufacturer,
+        orderDate: Number(result.orderDate),
+        batchId: Number(result.batchId),
+        medName: result.medName,
+        quantity: Number(result.quantity),
+        isAssigned: result.isAssigned,
+        status: result.status,
+        orderApprovedDate: Number(result.orderApprovedDate),
+      };
+
+      setDistributorOrders((prevOrders) => ({
+        ...prevOrders,
+        [orderId]: resultDistributor,
+      }));
+    } catch (error) {
+      console.error("Error fetching distributor order:", error);
     }
   };
 
@@ -150,7 +200,6 @@ export default function OrdersFulfilledTable() {
                 <TableHead>Distributor</TableHead>
                 <TableHead>Order Date</TableHead>
                 <TableHead>Order Approved Date</TableHead>
-                <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -163,12 +212,23 @@ export default function OrdersFulfilledTable() {
                 orders.map((order) => (
                   <TableRow key={order.batchId}>
                     <TableCell>{order.batchId}</TableCell>
-
                     <TableCell>{order.details}</TableCell>
                     <TableCell>{order.quantity}</TableCell>
                     <TableCell>{order.distributor}</TableCell>
                     <TableCell>
-                      {order.isRecalled ? "Recalled" : "Aproved"}
+                      {distributorOrders[order.orderId]
+                        ? new Date(
+                            distributorOrders[order.orderId].orderDate * 1000,
+                          ).toLocaleString()
+                        : "Loading..."}
+                    </TableCell>
+                    <TableCell>
+                      {distributorOrders[order.orderId]
+                        ? new Date(
+                            distributorOrders[order.orderId].orderApprovedDate *
+                              1000,
+                          ).toLocaleString()
+                        : "Loading..."}
                     </TableCell>
                     <TableCell>
                       <Button
