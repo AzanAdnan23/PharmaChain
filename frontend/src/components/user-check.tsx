@@ -20,6 +20,8 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { LoadingSpinner } from "./ui/loading-spinner";
+import { CldUploadWidget } from "next-cloudinary";
+import { Toaster, toast } from "sonner";
 
 enum Role {
   Manufacturer = 0,
@@ -32,6 +34,7 @@ interface UserCheckProps {
 }
 
 export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
+  const [pfpURL, setpfpURL] = useState<string | null>(null);
   const [email, setEmail] = useState<string>("");
   const [role, setRole] = useState<string>("");
   const [companyName, setCompanyName] = useState<string>("");
@@ -127,6 +130,18 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
     }
   };
 
+  const handlePfpSuccess = (result: any, widget: any) => {
+    setpfpURL(result?.info?.public_id);
+    toast.success("Profile picture uploaded successfully");
+    widget.close();
+  }
+
+  const handlePfpError = (error: any, widget: any) => {
+    toast.error("Error uploading profile picture");
+    widget.close();
+  }
+
+
   const {
     sendUserOperation,
     sendUserOperationResult,
@@ -139,10 +154,10 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
 
     const uoCallData = client
       ? encodeFunctionData({
-          abi: ContractAbi,
-          functionName: "registerUser",
-          args: [address, companyName, roleEnumValue(role), email],
-        })
+        abi: ContractAbi,
+        functionName: "registerUser",
+        args: [address, companyName, roleEnumValue(role), email],
+      })
       : null;
     if (!client || !uoCallData) {
       console.error("Client not initialized or uoCallData is null");
@@ -156,6 +171,23 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
           data: uoCallData,
         },
       });
+
+      // Send address and pfpURL to the API route
+      const res = await fetch("/api/register-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          address,
+          pfpURL,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to save user data to the database");
+      }
+
       setIsRegistered(true);
       router.push(`/dashboard/${role.toLowerCase()}`); // Redirect after successful registration
     } catch (error) {
@@ -164,6 +196,7 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
       setIsLoading(false);
     }
   };
+
 
   if (isCheckingRegistration || isRegistered === null || isRegistered) {
     return <LoadingSpinner />;
@@ -201,6 +234,24 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
             <option value="Distributor">Distributor</option>
             <option value="Provider">Provider</option>
           </select>
+          <CldUploadWidget
+            uploadPreset="djfushlk"
+            options={{ sources: ["local", "url"], multiple: false }}
+            onError={handlePfpError}
+            onSuccess={handlePfpSuccess}
+          >
+            {({ open }) => {
+              return (
+                <Button
+                  className="mt-4"
+                  onClick={(event: React.MouseEvent<HTMLButtonElement>) => open()}
+                  type="button"
+                >
+                  Upload Profile Picture
+                </Button>
+              );
+            }}
+          </CldUploadWidget>
           <Button
             type="submit"
             disabled={isLoading}
@@ -210,6 +261,7 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
           </Button>
         </div>
       </form>
+      <Toaster />
     </Card>
   );
 };
