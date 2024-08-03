@@ -1,4 +1,3 @@
-// app/api/scan-rfid/route.js
 import { SerialPort } from 'serialport';
 
 export async function GET() {
@@ -27,12 +26,13 @@ export async function GET() {
           console.log('No card scanned');
         } else {
           validIdFound = true;
-          console.log('Card ID:', responseHex);
+          const last32Bytes = responseHex.slice(-32); // Extract the last 32 hex characters
+          console.log('Card ID:', last32Bytes);
           port.close((closeErr) => {
             if (closeErr) {
               console.error('Error closing port: ', closeErr.message);
             }
-            resolve(new Response(responseHex));
+            resolve(new Response(last32Bytes));
           });
         }
       };
