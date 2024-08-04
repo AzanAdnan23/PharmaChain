@@ -56,9 +56,9 @@ const ConsumerView = () => {
                     </div>
                 </DrawerTrigger>
                 <DrawerContent>
-                    <div className="mx-auto w-full max-w-sm">
+                    <div className="">
                         <DrawerHeader>
-                            <DrawerTitle className="text-2xl">Verification Status</DrawerTitle>
+                            <DrawerTitle className="text-2xl text-center">Verification Status</DrawerTitle>
                         </DrawerHeader>
                         <div className="p-4">
                             <div className="text-center text-md text-green-700">
