@@ -39,35 +39,28 @@ contract PharmaChain {
     }
 
     struct DistributorOrder {
-        uint256 orderId;
-        address distributor;
-        address manufacturer;
-        uint256 orderDate;
-        uint256 batchId;
         string medName;
         uint256 quantity;
-        bool isAssigned;
-        OrderStatus status;
-        uint256 orderApprovedDate;
-    }
-
-    struct BatchUnit {
-        uint256 unitId;
+        uint256 orderId;
         uint256 batchId;
-        address provider;
+        address distributor;
+        address manufacturer;
         bool isAssigned;
+        uint256 orderDate;
+        uint256 orderApprovedDate;
+        OrderStatus status;
     }
 
     struct ProviderOrder {
+        string medName;
+        uint256 quantity;
         uint256 orderId;
+        uint256 batchId;
         address provider;
         address distributor;
+        bool isAssigned;
         uint256 orderDate;
         uint256 orderApprovedDate;
-        uint256 unitId;
-        string details;
-        bool isAssigned;
-        uint256 batchId; // Will be assigned by the distributor
         OrderStatus status;
     }
 
@@ -78,17 +71,17 @@ contract PharmaChain {
 
     mapping(address => User) public users;
     mapping(uint256 => Batch) public batches;
-    mapping(uint256 => BatchUnit) public batchUnits;
+
     mapping(uint256 => DistributorOrder) public distributorOrders;
     mapping(uint256 => ProviderOrder) public providerOrders;
 
-    mapping(address => mapping(string => uint256)) public distributorStocks; // Distributor stock mapping
-    mapping(address => mapping(string => uint256)) public providerStocks; // Provider stock mapping
-    mapping(address => string[]) public distributorMedNames; // List of medication names for distributor
-    mapping(address => string[]) public providerMedNames; // List of medication names for provider
+    mapping(address => mapping(string => uint256)) public distributorStocks;
+    mapping(address => mapping(string => uint256)) public providerStocks;
+    mapping(address => string[]) public distributorMedNames;
+    mapping(address => string[]) public providerMedNames;
 
     uint256 public nextBatchId = 100;
-    uint256 public nextUnitId = 100;
+
     uint256 public nextDistributorOrderId = 100;
     uint256 public nextProviderOrderId = 100;
 
@@ -116,6 +109,10 @@ contract PharmaChain {
     event BatchAssignedToDistributor(
         uint256 indexed batchId,
         address indexed distributor
+    );
+    event BatchAssignedToProvider(
+        uint256 indexed batchId,
+        address indexed provider
     );
 
     modifier onlyManufacturer() {
@@ -216,7 +213,7 @@ contract PharmaChain {
             manufacturer: msg.sender,
             details: _details,
             isQualityApproved: false,
-            isQualityDisapproved: false, // Initialize as not disapproved
+            isQualityDisapproved: false,
             distributor: address(0),
             rfidUIDHash: _rfidUIDHash,
             isRecalled: false,
@@ -245,7 +242,7 @@ contract PharmaChain {
         );
 
         batch.isQualityApproved = true;
-        batch.isQualityDisapproved = false; // Set disapproved to false
+        batch.isQualityDisapproved = false;
 
         emit QualityApproved(_batchId, msg.sender);
     }
@@ -257,8 +254,8 @@ contract PharmaChain {
             "Only the manufacturer can disapprove quality"
         );
 
-        batch.isQualityApproved = false; // Ensure the approved flag is false
-        batch.isQualityDisapproved = true; // Set disapproved to true
+        batch.isQualityApproved = false;
+        batch.isQualityDisapproved = true;
 
         emit QualityDisapproved(_batchId, msg.sender);
     }
@@ -297,12 +294,12 @@ contract PharmaChain {
         );
 
         batch.distributor = _distributor;
-        batch.orderId = _orderId; // Set order ID in batch
-        order.batchId = _batchId; // Assign the batch to the order
+        batch.orderId = _orderId;
+        order.batchId = _batchId;
 
         order.manufacturer = msg.sender;
         order.status = OrderStatus.Approved;
-        order.orderApprovedDate = block.timestamp; // Update approved date
+        order.orderApprovedDate = block.timestamp;
 
         emit BatchAssignedToDistributor(_batchId, _distributor);
     }
@@ -336,7 +333,6 @@ contract PharmaChain {
     ) external view returns (Batch[] memory) {
         uint256 count = 0;
         for (uint256 i = 100; i < nextBatchId; i++) {
-            // Start from 100
             if (
                 batches[i].manufacturer == _manufacturer &&
                 batches[i].distributor != address(0)
@@ -348,7 +344,6 @@ contract PharmaChain {
         Batch[] memory fulfilledBatches = new Batch[](count);
         uint256 index = 0;
         for (uint256 i = 100; i < nextBatchId; i++) {
-            // Start from 100
             if (
                 batches[i].manufacturer == _manufacturer &&
                 batches[i].distributor != address(0)
@@ -359,32 +354,6 @@ contract PharmaChain {
         }
 
         return fulfilledBatches;
-    }
-
-    function getPendingDistributorOrders()
-        external
-        view
-        returns (DistributorOrder[] memory)
-    {
-        uint256 count = 0;
-        for (uint256 i = 100; i < nextDistributorOrderId; i++) {
-            // Start from 100
-            if (!distributorOrders[i].isAssigned) {
-                count++;
-            }
-        }
-
-        DistributorOrder[] memory pendingOrders = new DistributorOrder[](count);
-        uint256 index = 0;
-        for (uint256 i = 100; i < nextDistributorOrderId; i++) {
-            // Start from 100
-            if (!distributorOrders[i].isAssigned) {
-                pendingOrders[index] = distributorOrders[i];
-                index++;
-            }
-        }
-
-        return pendingOrders;
     }
 
     // DISTRIBUTOR FUNCTIONS
@@ -431,6 +400,67 @@ contract PharmaChain {
         }
     }
 
+    function assignBatchToProvider(
+        uint256 _batchId,
+        address _provider
+    ) external onlyDistributor {
+        require(users[_provider].role == Role.Provider, "Invalid provider");
+
+        Batch storage batch = batches[_batchId];
+        require(
+            batch.distributor == msg.sender,
+            "Only the assigned distributor can assign this batch"
+        );
+        require(batch.isQualityApproved, "Batch must be quality approved");
+        require(!batch.isRecalled, "Batch has been recalled");
+
+        ProviderOrder memory order = ProviderOrder({
+            medName: batch.details,
+            quantity: batch.quantity,
+            orderId: nextProviderOrderId++,
+            batchId: _batchId,
+            provider: _provider,
+            distributor: msg.sender,
+            isAssigned: true,
+            orderDate: block.timestamp,
+            orderApprovedDate: block.timestamp,
+            status: OrderStatus.Approved
+        });
+
+        providerOrders[order.orderId] = order;
+
+        providerStocks[_provider][batch.details] += batch.quantity;
+        if (!_medNameExistsInList(_provider, batch.details, false)) {
+            providerMedNames[_provider].push(batch.details);
+        }
+
+        emit BatchAssignedToProvider(_batchId, _provider);
+    }
+
+    function getPendingDistributorOrders()
+        external
+        view
+        returns (DistributorOrder[] memory)
+    {
+        uint256 count = 0;
+        for (uint256 i = 100; i < nextDistributorOrderId; i++) {
+            if (!distributorOrders[i].isAssigned) {
+                count++;
+            }
+        }
+
+        DistributorOrder[] memory pendingOrders = new DistributorOrder[](count);
+        uint256 index = 0;
+        for (uint256 i = 100; i < nextDistributorOrderId; i++) {
+            if (!distributorOrders[i].isAssigned) {
+                pendingOrders[index] = distributorOrders[i];
+                index++;
+            }
+        }
+
+        return pendingOrders;
+    }
+
     function getDistributorOrder(
         uint256 _orderId
     ) external view returns (DistributorOrder memory) {
@@ -439,24 +469,11 @@ contract PharmaChain {
         return order;
     }
 
-    function assignUnitToProvider(
-        uint256 _unitId,
-        address _provider
-    ) external onlyDistributor {
-        BatchUnit storage unit = batchUnits[_unitId];
-        require(!unit.isAssigned, "Unit is already assigned");
-        require(users[_provider].role == Role.Provider, "Invalid provider");
-
-        unit.provider = _provider;
-        unit.isAssigned = true;
-    }
-
     function getDistributorOrders(
         address _distributor
     ) external view returns (DistributorOrder[] memory) {
         uint256 count = 0;
         for (uint256 i = 100; i < nextDistributorOrderId; i++) {
-            // Start from 100
             if (distributorOrders[i].distributor == _distributor) {
                 count++;
             }
@@ -465,7 +482,6 @@ contract PharmaChain {
         DistributorOrder[] memory orders = new DistributorOrder[](count);
         uint256 index = 0;
         for (uint256 i = 100; i < nextDistributorOrderId; i++) {
-            // Start from 100
             if (distributorOrders[i].distributor == _distributor) {
                 orders[index] = distributorOrders[i];
                 index++;
@@ -477,18 +493,18 @@ contract PharmaChain {
 
     // PROVIDER FUNCTIONS
     function createProviderOrder(
-        string memory _details,
-        address _distributor
+        string memory _medName,
+        uint256 _qunatity
     ) external onlyProvider {
         uint256 orderId = nextProviderOrderId++;
 
         providerOrders[orderId] = ProviderOrder({
             orderId: orderId,
             provider: msg.sender,
-            distributor: _distributor,
+            distributor: address(0),
             orderDate: block.timestamp,
-            unitId: 0,
-            details: _details,
+            medName: _medName,
+            quantity: _qunatity,
             isAssigned: false,
             batchId: 0,
             status: OrderStatus.Pending,
@@ -496,58 +512,12 @@ contract PharmaChain {
         });
     }
 
-    function assignBatchUnitToOrder(
-        uint256 _orderId,
-        uint256 _unitId
-    ) external onlyDistributor {
+    function getProviderOrderDetails(
+        uint256 _orderId
+    ) external view returns (ProviderOrder memory) {
         ProviderOrder storage order = providerOrders[_orderId];
-        require(
-            order.distributor == msg.sender,
-            "Only the distributor can assign a unit"
-        );
-
-        BatchUnit storage unit = batchUnits[_unitId];
-        require(unit.isAssigned && unit.provider != address(0), "Invalid unit");
-
-        order.unitId = _unitId;
-        order.isAssigned = true;
-        order.batchId = unit.batchId;
-        order.status = OrderStatus.InTransit;
-    }
-
-    function updateProviderOrderStatus(
-        uint256 _orderId,
-        OrderStatus _status
-    ) external onlyProvider {
-        ProviderOrder storage order = providerOrders[_orderId];
-        require(
-            order.provider == msg.sender,
-            "Only the provider can update the order status"
-        );
-
-        order.status = _status;
-
-        if (_status == OrderStatus.Reached) {
-            // Update provider's stock when order status changes to Reached
-            BatchUnit storage unit = batchUnits[order.unitId];
-            distributorStocks[order.distributor][
-                batches[unit.batchId].details
-            ] -= 1;
-            providerStocks[msg.sender][batches[unit.batchId].details] += 1;
-
-            // Add medName to provider's medName list if not already present
-            if (
-                !_medNameExistsInList(
-                    msg.sender,
-                    batches[unit.batchId].details,
-                    false
-                )
-            ) {
-                providerMedNames[msg.sender].push(
-                    batches[unit.batchId].details
-                );
-            }
-        }
+        require(order.orderId != 0, "Order does not exist");
+        return order;
     }
 
     function getProviderOrders(
@@ -555,7 +525,6 @@ contract PharmaChain {
     ) external view returns (ProviderOrder[] memory) {
         uint256 count = 0;
         for (uint256 i = 100; i < nextProviderOrderId; i++) {
-            // Start from 100
             if (providerOrders[i].provider == _provider) {
                 count++;
             }
@@ -564,7 +533,6 @@ contract PharmaChain {
         ProviderOrder[] memory orders = new ProviderOrder[](count);
         uint256 index = 0;
         for (uint256 i = 100; i < nextProviderOrderId; i++) {
-            // Start from 100
             if (providerOrders[i].provider == _provider) {
                 orders[index] = providerOrders[i];
                 index++;
@@ -572,6 +540,34 @@ contract PharmaChain {
         }
 
         return orders;
+    }
+
+    function getPendingProviderOrders(
+        address _provider
+    ) external view returns (ProviderOrder[] memory) {
+        uint256 count = 0;
+        for (uint256 i = 100; i < nextProviderOrderId; i++) {
+            if (
+                providerOrders[i].provider == _provider &&
+                providerOrders[i].status == OrderStatus.Pending
+            ) {
+                count++;
+            }
+        }
+
+        ProviderOrder[] memory pendingOrders = new ProviderOrder[](count);
+        uint256 index = 0;
+        for (uint256 i = 100; i < nextProviderOrderId; i++) {
+            if (
+                providerOrders[i].provider == _provider &&
+                providerOrders[i].status == OrderStatus.Pending
+            ) {
+                pendingOrders[index] = providerOrders[i];
+                index++;
+            }
+        }
+
+        return pendingOrders;
     }
 
     // STOCK FUNCTIONS

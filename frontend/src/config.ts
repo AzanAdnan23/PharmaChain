@@ -16,7 +16,7 @@ import PharmaChain from "../artifacts/contracts/PharmaChain.sol/PharmaChain.json
 import { createPublicClient, http } from 'viem'
 import { arbitrumSepolia as arbitrumSepoliaviem } from "viem/chains";
 
-export const ContractAddress = "0x2d1D3F9dC42DFbBf3613F07E8F42653b870c9a89";
+export const ContractAddress = "0xCf6AdD69d77c934Dc5e52fB8ACe1f4408C91217C";
 export const ContractAbi = PharmaChain.abi;
 
 export const publicClient = createPublicClient({
