@@ -74,6 +74,10 @@ export default function CreateBatchForm() {
       console.error("Error creating batch:", error);
     } finally {
       setIsLoading(false);
+      //refresh page after 5 seconds
+      setTimeout(() => {
+        window.location.reload();
+      }, 5000);
     }
   };
 
@@ -92,8 +96,7 @@ export default function CreateBatchForm() {
   };
 
   const scanRfidDummy = async () => {
-    const arbitraryRfidUID =
-      "0x00000000000000000000000000000000000000000000000000000000000004d2";
+    const arbitraryRfidUID = "0x00000000000000000000000000000000000000000000000000000000000004d2";
     setRfidUID(arbitraryRfidUID);
   };
 

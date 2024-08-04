@@ -152,6 +152,11 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
   const registerUser = async (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
 
+    if (!pfpURL) {
+      toast.error("Please upload a profile picture before registering.");
+      return;
+    }
+
     const uoCallData = client
       ? encodeFunctionData({
         abi: ContractAbi,
@@ -198,6 +203,7 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
   };
 
 
+
   if (isCheckingRegistration || isRegistered === null || isRegistered) {
     return <LoadingSpinner />;
   }
@@ -205,7 +211,7 @@ export const UserCheck: React.FC<UserCheckProps> = ({ onUserRoleCheck }) => {
   return (
     <Card className="p-6 max-w-md mx-auto shadow-lg">
       <form className="flex flex-col gap-6" onSubmit={registerUser}>
-        <div className="text-center text-[20px] font-bold text-gray-800 mb-4">
+        <div className="text-center text-[20px] font-bold mb-4">
           Register User
         </div>
         <div className="flex flex-col gap-4">

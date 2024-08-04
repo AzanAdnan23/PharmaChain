@@ -8,13 +8,13 @@ import { CldImage } from "next-cloudinary";
 import { accountType } from "@/config";
 import { Switch } from "./ui/switch"; // Import Switch component from ./ui/switch
 import { Card } from "./ui/card"; // Import Card component from ./ui/card
-import { SunIcon } from "lucide-react"; // Import SunIcon for the theme switch
+import { MoonIcon } from "lucide-react"; // Import MoonIcon for the theme switch
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"; // Import Popover components
 
 const Navbar = () => {
   const [mounted, setMounted] = useState(false);
   const [pfpURL, setPfpURL] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showCard, setShowCard] = useState(false);
   const { theme, setTheme } = useTheme();
   const { address } = useAccount({ type: accountType });
 
@@ -58,18 +58,12 @@ const Navbar = () => {
     setTheme(checked ? "dark" : "light");
   };
 
-  const handleProfileClick = () => {
-    if (address) {
-      setShowCard(!showCard);
-    }
-  };
-
   if (!mounted) {
     return null;
   }
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-white px-4 shadow-md dark:bg-gray-800">
+    <header className="top-0 flex h-16 items-center justify-between border-b bg-white px-4 shadow-md dark:bg-gray-800">
       <nav className="flex items-center">
         <Link href="/" className="text-lg font-semibold text-black dark:text-white">
           PharmaChain
@@ -85,41 +79,40 @@ const Navbar = () => {
         )}
         {address && (
           <div className="relative">
-            <CldImage
-              width="40"
-              height="40"
-              src={pfpURL || '/default-avatar.png'}
-              sizes="100vw"
-              alt="Profile Picture"
-              className="w-10 h-10 rounded-full border border-gray-300 dark:border-gray-700 cursor-pointer"
-              onClick={handleProfileClick}
-            />
-            {showCard && (
-              <Card
-                className="absolute top-16 right-0 w-64 p-4 bg-white dark:bg-gray-900 shadow-lg border border-gray-300 dark:border-gray-700"
-              >
+            <Popover>
+              <PopoverTrigger asChild>
                 <CldImage
-                  width="80"
-                  height="80"
+                  width="40"
+                  height="40"
                   src={pfpURL || '/default-avatar.png'}
                   sizes="100vw"
                   alt="Profile Picture"
-                  className="w-20 h-20 rounded-full mx-auto mb-4"
+                  className="w-10 h-10 rounded-full border border-gray-300 dark:border-gray-700 cursor-pointer"
                 />
+              </PopoverTrigger>
+              <PopoverContent className="mr-2 mt-4 w-64 p-4 bg-white dark:bg-gray-900 shadow-lg border border-gray-300 dark:border-gray-700">
                 <div className="flex flex-col items-center space-y-4">
+                  <CldImage
+                    width="80"
+                    height="80"
+                    src={pfpURL || '/default-avatar.png'}
+                    sizes="100vw"
+                    alt="Profile Picture"
+                    className="w-20 h-20 rounded-full mx-auto mb-4"
+                  />
                   <div className="flex items-center space-x-2 mb-2">
-                    <SunIcon className="h-6 w-6 text-gray-500 dark:text-gray-300" />
+                    <MoonIcon className="h-6 w-6 text-gray-500 dark:text-gray-300" />
                     <Switch
                       checked={theme === "dark"}
-                      onCheckedChange={(checked) => handleThemeChange(checked)}
+                      onCheckedChange={handleThemeChange}
                     />
                   </div>
                   <div className="flex items-center space-x-2">
                     <LogOut />
                   </div>
                 </div>
-              </Card>
-            )}
+              </PopoverContent>
+            </Popover>
           </div>
         )}
       </nav>

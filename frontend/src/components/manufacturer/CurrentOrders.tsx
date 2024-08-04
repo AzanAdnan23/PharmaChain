@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { getContract, encodeFunctionData } from "viem";
-
 import {
   useAccount,
   useSendUserOperation,
@@ -15,7 +14,6 @@ import {
   publicClient,
 } from "@/config";
 import { LoadingSpinner } from "../ui/loading-spinner";
-
 import {
   Table,
   TableHeader,
@@ -26,7 +24,9 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"; // Import Dialog components
 import { Input } from "@/components/ui/input";
+import { toast, Toaster } from "sonner";
 
 interface Order {
   orderId: number;
@@ -66,16 +66,15 @@ export default function CurrentOrdersTable() {
       const result = await PharmaChain.read.getPendingDistributorOrders();
       console.log("Getting Pending Orders", result);
 
-      // Map and filter orders to show only pending ones
       const formattedOrders = (result as any[])
         .map((order) => ({
           orderId: Number(order.orderId),
           medName: order.medName,
           quantity: Number(order.quantity),
-          status: statusMapping[order.status] || "Unknown", // Map the status
+          status: statusMapping[order.status] || "Unknown",
           distributorAddr: order.distributor,
         }))
-        .filter((order) => order.status === "Pending"); // Filter pending orders
+        .filter((order) => order.status === "Pending");
 
       setOrders(formattedOrders);
     } catch (error) {
@@ -88,10 +87,6 @@ export default function CurrentOrdersTable() {
   useEffect(() => {
     fetchPendingOrders();
   }, [address]);
-
-  const handleAssign = (order: Order) => {
-    setSelectedOrder(order);
-  };
 
   return (
     <Card>
@@ -111,30 +106,37 @@ export default function CurrentOrdersTable() {
           </TableHeader>
           <TableBody>
             {orders.map((order) => (
-              <TableRow
-                key={order.orderId}
-                onClick={() => setSelectedOrder(order)}
-              >
+              <TableRow key={order.orderId}>
                 <TableCell>{order.orderId}</TableCell>
                 <TableCell>{order.medName}</TableCell>
                 <TableCell>{order.quantity}</TableCell>
                 <TableCell>{order.status}</TableCell>
                 <TableCell>
-                  <Button onClick={() => handleAssign(order)}>
-                    Assign to Distributor
-                  </Button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button onClick={() => setSelectedOrder(order)}>
+                        Assign to Distributor
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Assign Order</DialogTitle>
+                      </DialogHeader>
+                      {selectedOrder && (
+                        <AssignToDistributorForm
+                          order={selectedOrder}
+                          onClose={() => setSelectedOrder(null)}
+                        />
+                      )}
+                    </DialogContent>
+                  </Dialog>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-        {selectedOrder && (
-          <AssignToDistributorForm
-            order={selectedOrder}
-            onClose={() => setSelectedOrder(null)}
-          />
-        )}
       </CardContent>
+      <Toaster />
     </Card>
   );
 }
@@ -147,7 +149,6 @@ function AssignToDistributorForm({
   onClose: () => void;
 }) {
   const [batchID, setBatchID] = useState("");
-
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { client } = useSmartAccountClient({
@@ -156,71 +157,70 @@ function AssignToDistributorForm({
     opts,
   });
 
-  const {
-    sendUserOperation,
-    isSendingUserOperation,
-    error: isSendUserOperationError,
-  } = useSendUserOperation({ client, waitForTxn: true });
+  const { sendUserOperation } = useSendUserOperation({ client, waitForTxn: true });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Check if batchID is empty
+    if (!batchID.trim()) {
+        console.error("Batch ID cannot be empty.");
+        toast.error("Batch ID cannot be empty.");
+        return;
+    }
+
+    // Encode the function data
     const uoCallData = encodeFunctionData({
-      abi: ContractAbi,
-      functionName: "assignToDistributor",
-      args: [batchID, order.distributorAddr, order.orderId],
+        abi: ContractAbi,
+        functionName: "assignToDistributor",
+        args: [batchID, order.distributorAddr, order.orderId],
     });
 
     if (!client || !uoCallData) {
-      console.error("Client not initialized or uoCallData is null");
-      return;
+        console.error("Client not initialized or uoCallData is null");
+        return;
     }
 
     setIsLoading(true);
     try {
-      await sendUserOperation({
-        uo: {
-          target: ContractAddress,
-          data: uoCallData,
-        },
-      });
+        await sendUserOperation({
+            uo: {
+                target: ContractAddress,
+                data: uoCallData,
+            },
+        });
 
-      console.log(
-        "Assigning batch:",
-        batchID,
-        order.distributorAddr,
-        order.orderId,
-      );
+        console.log(
+            "Assigning batch:",
+            batchID,
+            order.distributorAddr,
+            order.orderId,
+        );
+        toast.success("Batch assigned to distributor successfully.");
     } catch (error) {
-      console.error("Error assigning batch to distributor:", error);
+        console.error("Error assigning batch to distributor:", error);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
     onClose();
-  };
+};
+
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Assign Order</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            type="text"
-            placeholder="Batch ID"
-            value={batchID}
-            onChange={(e) => setBatchID(e.target.value)}
-            className="mb-2"
-          />
-          <Button type="submit" className="mt-4" disabled={isLoading}>
-            {isLoading ? <LoadingSpinner /> : "Assign"}
-          </Button>
-          <Button type="button" onClick={onClose} className="ml-2">
-            Cancel
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <Input
+        type="text"
+        placeholder="Batch ID"
+        value={batchID}
+        onChange={(e) => setBatchID(e.target.value)}
+        className="mb-2"
+      />
+      <Button type="submit" className="mt-4" disabled={isLoading}>
+        {isLoading ? <LoadingSpinner /> : "Assign"}
+      </Button>
+      <Button type="button" onClick={onClose} className="ml-2">
+        Cancel
+      </Button>
+    </form>
   );
 }

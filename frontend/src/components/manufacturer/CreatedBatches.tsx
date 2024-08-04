@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
+import { toast, Toaster } from 'sonner';
 
 interface Batch {
   batchId: number;
@@ -119,6 +120,7 @@ export default function CreatedBatchesTable() {
       });
       console.log("Batch Quality Approved by this address", address);
       await fetchCreatedBatches(); // Refetch data after operation
+      toast.success('Batch quality approved successfully');
     } catch (error) {
       console.error("Error approving quality of batch:", error);
     } finally {
@@ -148,6 +150,7 @@ export default function CreatedBatchesTable() {
       });
       console.log("Batch Quality Disapproved by this address", address);
       await fetchCreatedBatches(); // Refetch data after operation
+      toast.success('Batch quality disapproved successfully');
     } catch (error) {
       console.error("Error disapproving quality of batch:", error);
     } finally {
@@ -161,29 +164,38 @@ export default function CreatedBatchesTable() {
   };
 
   return (
-    <Card>
+    <Card className="min-h-full">
+      <Toaster />
       <CardHeader>
         <CardTitle>Created Batches</CardTitle>
       </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <p>Loading...</p>
-        ) : createdBatches.length === 0 ? (
-          <p>No batches found</p>
-        ) : (
-          <Table>
-            <TableHeader>
+      <CardContent className="flex flex-col h-full">
+        <Table className="flex-1">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Batch ID</TableHead>
+              <TableHead>Medicine Name</TableHead>
+              <TableHead>Quantity</TableHead>
+              <TableHead>Manufacture Date</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Quality</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
               <TableRow>
-                <TableHead>Batch ID</TableHead>
-                <TableHead>Medicine Name</TableHead>
-                <TableHead>Quantity</TableHead>
-                <TableHead>Manufacture Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Quality</TableHead>
+                <TableCell colSpan={6} className="text-center">
+                  Loading...
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {createdBatches.map((batch) => (
+            ) : createdBatches.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center text-gray-500">
+                  No batches found
+                </TableCell>
+              </TableRow>
+            ) : (
+              createdBatches.map((batch) => (
                 <TableRow key={batch.batchId}>
                   <TableCell>{batch.batchId}</TableCell>
                   <TableCell>{batch.details}</TableCell>
@@ -221,10 +233,10 @@ export default function CreatedBatchesTable() {
                     )}
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+              ))
+            )}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   );

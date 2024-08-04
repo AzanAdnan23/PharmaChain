@@ -1,5 +1,3 @@
-// src/components/OrderBatchForm.tsx
-
 import { useState } from "react";
 import { encodeFunctionData } from "viem";
 import {
@@ -19,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
+import { toast, Toaster } from "sonner";
 
 interface FormData {
   medicineName: string;
@@ -30,6 +29,7 @@ const OrderBatchForm = () => {
     register,
     handleSubmit,
     formState: { errors },
+    reset, // Import the reset method
   } = useForm<FormData>();
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -74,6 +74,10 @@ const OrderBatchForm = () => {
       });
       console.log("Order created successfully by this address", address);
       setSubmitted(true);
+      toast.success("Order created successfully");
+
+      // Reset form fields after successful order
+      reset();
     } catch (error) {
       console.error("Error creating order:", error);
     } finally {
@@ -127,11 +131,9 @@ const OrderBatchForm = () => {
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Placing Order..." : "Place Order"}
           </Button>
-          {submitted && (
-            <p className="mt-2 text-green-500">Order placed successfully!</p>
-          )}
         </form>
       </CardContent>
+      <Toaster />
     </Card>
   );
 };
