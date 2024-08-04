@@ -63,9 +63,9 @@ const Navbar = () => {
   }
 
   return (
-    <header className="top-0 flex h-16 items-center justify-between border-b bg-white px-4 shadow-md dark:bg-gray-800">
+    <header className="top-0 flex h-20 items-center justify-between border-b bg-white px-4 shadow-md dark:bg-gray-800">
       <nav className="flex items-center">
-        <Link href="/" className="text-lg font-semibold text-black dark:text-white">
+        <Link href="/" className="text-2xl font-semibold text-black dark:text-white">
           PharmaChain
         </Link>
       </nav>

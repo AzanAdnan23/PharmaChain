@@ -49,6 +49,7 @@ export default function CurrentOrdersTable() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const { address } = useAccount({ type: accountType });
 
@@ -112,7 +113,7 @@ export default function CurrentOrdersTable() {
                 <TableCell>{order.quantity}</TableCell>
                 <TableCell>{order.status}</TableCell>
                 <TableCell>
-                  <Dialog>
+                  <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                     <DialogTrigger asChild>
                       <Button onClick={() => setSelectedOrder(order)}>
                         Assign to Distributor
@@ -125,7 +126,10 @@ export default function CurrentOrdersTable() {
                       {selectedOrder && (
                         <AssignToDistributorForm
                           order={selectedOrder}
-                          onClose={() => setSelectedOrder(null)}
+                          onClose={() => {
+                            setSelectedOrder(null);
+                            setDialogOpen(false);
+                          }}
                         />
                       )}
                     </DialogContent>
@@ -157,53 +161,65 @@ function AssignToDistributorForm({
     opts,
   });
 
-  const { sendUserOperation } = useSendUserOperation({ client, waitForTxn: true });
+  const {
+    sendUserOperation,
+    isSendingUserOperation,
+    error: isSendUserOperationError,
+    sendUserOperationResult,
+  } = useSendUserOperation({ client, waitForTxn: true });
+
+  useEffect(() => {
+    if (!isSendingUserOperation && sendUserOperationResult) {
+      window.location.reload();
+    }
+  }, [isSendingUserOperation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Check if batchID is empty
     if (!batchID.trim()) {
-        console.error("Batch ID cannot be empty.");
-        toast.error("Batch ID cannot be empty.");
-        return;
+      console.error("Batch ID cannot be empty.");
+      toast.error("Batch ID cannot be empty.");
+      return;
     }
 
     // Encode the function data
     const uoCallData = encodeFunctionData({
-        abi: ContractAbi,
-        functionName: "assignToDistributor",
-        args: [batchID, order.distributorAddr, order.orderId],
+      abi: ContractAbi,
+      functionName: "assignToDistributor",
+      args: [batchID, order.distributorAddr, order.orderId],
     });
 
     if (!client || !uoCallData) {
-        console.error("Client not initialized or uoCallData is null");
-        return;
+      console.error("Client not initialized or uoCallData is null");
+      return;
     }
 
     setIsLoading(true);
     try {
-        await sendUserOperation({
-            uo: {
-                target: ContractAddress,
-                data: uoCallData,
-            },
-        });
+      await sendUserOperation({
+        uo: {
+          target: ContractAddress,
+          data: uoCallData,
+        },
+      });
 
-        console.log(
-            "Assigning batch:",
-            batchID,
-            order.distributorAddr,
-            order.orderId,
-        );
-        toast.success("Batch assigned to distributor successfully.");
+      console.log(
+        "Assigning batch:",
+        batchID,
+        order.distributorAddr,
+        order.orderId,
+      );
+      toast.success("Batch assigned to distributor successfully.");
     } catch (error) {
-        console.error("Error assigning batch to distributor:", error);
+      console.error("Error assigning batch to distributor:", error);
+      toast.error("Error assigning batch to distributor.");
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
+      onClose();
     }
-    onClose();
-};
+  };
 
 
   return (
@@ -214,6 +230,7 @@ function AssignToDistributorForm({
         value={batchID}
         onChange={(e) => setBatchID(e.target.value)}
         className="mb-2"
+        required
       />
       <Button type="submit" className="mt-4" disabled={isLoading}>
         {isLoading ? <LoadingSpinner /> : "Assign"}

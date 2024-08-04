@@ -12,7 +12,7 @@ const ManufacturerDashboard = () => {
         <div className="md:col-span-1">
           <CreateBatchForm />
         </div>
-        <div className="md:col-span-2">
+        <div className="ml-2 md:col-span-2">
           <CreatedBatchesTable />
         </div>
       </div>

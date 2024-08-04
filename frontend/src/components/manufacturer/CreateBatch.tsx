@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { encodeFunctionData } from "viem";
 import {
   useAccount,
@@ -42,6 +42,12 @@ export default function CreateBatchForm() {
     isSendingUserOperation,
     error: isSendUserOperationError,
   } = useSendUserOperation({ client, waitForTxn: true });
+
+  useEffect(() => {
+    if (!isSendingUserOperation && sendUserOperationResult) {
+      window.location.reload();
+    }
+  }, [isSendingUserOperation]);
 
   const createNewBatch = async (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
@@ -120,6 +126,7 @@ export default function CreateBatchForm() {
             <label>Quantity</label>
             <Input
               type="number"
+              min={1}
               placeholder="Enter the quantity of medicine"
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}

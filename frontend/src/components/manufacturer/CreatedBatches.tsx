@@ -96,7 +96,14 @@ export default function CreatedBatchesTable() {
     sendUserOperation,
     isSendingUserOperation,
     error: isSendUserOperationError,
+    sendUserOperationResult,
   } = useSendUserOperation({ client, waitForTxn: true });
+
+  useEffect(() => {
+    if (!isSendingUserOperation && sendUserOperationResult) {
+      window.location.reload();
+    }
+  }, [isSendingUserOperation]);
 
   const handleAccept = async (batchID: number) => {
     const uoCallData = encodeFunctionData({

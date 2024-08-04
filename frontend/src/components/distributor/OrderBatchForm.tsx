@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { encodeFunctionData } from "viem";
 import {
   useAccount,
@@ -41,10 +41,18 @@ const OrderBatchForm = () => {
     opts,
   });
 
-  const { sendUserOperation } = useSendUserOperation({
-    client,
-    waitForTxn: true,
-  });
+  const { 
+    sendUserOperation,
+    sendUserOperationResult,
+    isSendingUserOperation,
+    error: isSendUserOperationError
+  } = useSendUserOperation({ client, waitForTxn: true, });
+
+  useEffect(() => {
+    if (!isSendingUserOperation && sendUserOperationResult) {
+      window.location.reload();
+    }
+  }, [isSendingUserOperation]);
 
   const onSubmit = async (data: FormData) => {
     const { medicineName, orderQuantity } = data;
