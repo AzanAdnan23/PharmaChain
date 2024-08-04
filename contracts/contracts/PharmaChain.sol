@@ -542,13 +542,16 @@ contract PharmaChain {
         return orders;
     }
 
-    function getPendingProviderOrders(
-        address _provider
-    ) external view returns (ProviderOrder[] memory) {
+    function getPendingProviderOrders()
+        external
+        view
+        onlyProvider
+        returns (ProviderOrder[] memory)
+    {
         uint256 count = 0;
         for (uint256 i = 100; i < nextProviderOrderId; i++) {
             if (
-                providerOrders[i].provider == _provider &&
+                providerOrders[i].provider == msg.sender &&
                 providerOrders[i].status == OrderStatus.Pending
             ) {
                 count++;
@@ -559,7 +562,7 @@ contract PharmaChain {
         uint256 index = 0;
         for (uint256 i = 100; i < nextProviderOrderId; i++) {
             if (
-                providerOrders[i].provider == _provider &&
+                providerOrders[i].provider == msg.sender &&
                 providerOrders[i].status == OrderStatus.Pending
             ) {
                 pendingOrders[index] = providerOrders[i];
