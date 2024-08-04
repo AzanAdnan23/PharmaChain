@@ -1,7 +1,8 @@
 // fix the status thingy of distributor
 
-// get order date and order fullfile from orderid      
-
+// get order date and order fullfile from orderid for provider
+// get all providers order
+// get pending orders for provider
 
 // get distributor batch status function from
 // get  company name from address

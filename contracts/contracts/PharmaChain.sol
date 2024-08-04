@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-//0x7D5157031399dCa98Af1d16a225d9c237aA7afA8
 contract PharmaChain {
     enum Role {
         Manufacturer,
@@ -36,7 +35,7 @@ contract PharmaChain {
         uint256 manufactureDate;
         uint256 expiryDate;
         uint256 quantity;
-        uint256 orderId; // New field
+        uint256 orderId;
     }
 
     struct DistributorOrder {
@@ -49,7 +48,7 @@ contract PharmaChain {
         uint256 quantity;
         bool isAssigned;
         OrderStatus status;
-        uint256 orderApprovedDate; // New field
+        uint256 orderApprovedDate;
     }
 
     struct BatchUnit {
@@ -64,6 +63,7 @@ contract PharmaChain {
         address provider;
         address distributor;
         uint256 orderDate;
+        uint256 orderApprovedDate;
         uint256 unitId;
         string details;
         bool isAssigned;
@@ -491,7 +491,8 @@ contract PharmaChain {
             details: _details,
             isAssigned: false,
             batchId: 0,
-            status: OrderStatus.Pending
+            status: OrderStatus.Pending,
+            orderApprovedDate: 0
         });
     }
 
