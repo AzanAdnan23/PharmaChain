@@ -1,24 +1,26 @@
+"use client";
+
 // src/app/dashboard/manufacturer/page.tsx
 import CreateBatchForm from "../manufacturer/CreateBatch";
 import CreatedBatchesTable from "../manufacturer/CreatedBatches";
 import CurrentOrdersTable from "../manufacturer/CurrentOrders";
 import OrdersFulfilledTable from "../manufacturer/OrdersFulfilled";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Navbar from "@/components/Navbar";
+
 
 const ManufacturerDashboard = () => {
   return (
-    <div className="flex flex-col gap-8 p-4 md:p-10">
-      <div className="grid gap-2 md:grid-cols-3 lg:grid-cols-3">
-        <div className="md:col-span-1">
-          <CreateBatchForm />
-        </div>
-        <div className="ml-2 md:col-span-2">
-          <CreatedBatchesTable />
-        </div>
-      </div>
+    <main className="bg-muted/40 min-h-screen">
+      <Navbar></Navbar>
+      <div className="p-4 grid grid-cols-2 gap-4">
+      <CreateBatchForm />
+      <CreatedBatchesTable />
       <CurrentOrdersTable />
       <OrdersFulfilledTable />
-    </div>
+      </div>
+    </main>
   );
 };
 

@@ -136,7 +136,7 @@ const OrderBatchForm = () => {
               </p>
             )}
           </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="" disabled={isLoading}>
             {isLoading ? "Placing Order..." : "Place Order"}
           </Button>
         </form>

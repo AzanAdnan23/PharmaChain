@@ -38,7 +38,7 @@ const ConsumerView = () => {
     const handleOpenDrawer = () => setIsDrawerOpen(true);
 
     return (
-        <div className="p-4 pr-5">
+        <main className="p-4 pr-5 bg-muted/40">
             <MedicineInfo
                 name="Panadol Tablets 500MG"
                 expiryDate="2025-12-31"
@@ -73,7 +73,7 @@ const ConsumerView = () => {
                     </div>
                 </DrawerContent>
             </Drawer>
-        </div>
+        </main>
     );
 };
 

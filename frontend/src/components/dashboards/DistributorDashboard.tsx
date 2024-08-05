@@ -1,3 +1,5 @@
+"use client";
+
 // src/app/dashboard/distributor/page.tsx
 import { useState } from "react";
 import OrderBatchForm from "../distributor/OrderBatchForm";
@@ -7,6 +9,7 @@ import ProviderOrdersTable from "../distributor/ProviderOrdersTable";
 import StockTable from "../distributor/StockTable";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import Navbar from "@/components/Navbar";
 
 const DistributorDashboard = () => {
   const [incomingRFID, setIncomingRFID] = useState("");
@@ -23,7 +26,9 @@ const DistributorDashboard = () => {
   };
 
   return (
-    <div className="flex flex-col gap-8 p-4 md:p-10">
+    <main className="bg-muted/40 min-h-screen">
+      <Navbar></Navbar>
+    <div className="flex flex-col gap-8 p-4">
       <OrderBatchForm />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
@@ -66,6 +71,7 @@ const DistributorDashboard = () => {
         </Card>
       </div>
     </div>
+    </main>
   );
 };
 

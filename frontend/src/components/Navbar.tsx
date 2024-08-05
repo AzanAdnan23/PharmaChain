@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
@@ -63,16 +65,16 @@ const Navbar = () => {
   }
 
   return (
-    <header className="top-0 flex h-20 items-center justify-between border-b bg-white px-4 shadow-md dark:bg-gray-800">
+    <header className="flex h-20 items-center justify-between border-b px-4 bg-background">
       <nav className="flex items-center">
-        <Link href="/" className="text-2xl font-semibold text-black dark:text-white">
+        <Link href="/" className="text-xl font-semibold">
           PharmaChain
         </Link>
       </nav>
       <nav className="flex items-center">
         {!address && (
           <Link href="/login" passHref>
-            <Button className="mr-4 bg-black text-white dark:bg-gray-300 dark:text-black">
+            <Button className="mr-6">
               Launch App
             </Button>
           </Link>
@@ -82,34 +84,32 @@ const Navbar = () => {
             <Popover>
               <PopoverTrigger asChild>
                 <CldImage
-                  width="40"
-                  height="40"
+                  width="100"
+                  height="100"
                   src={pfpURL || '/default-avatar.png'}
                   sizes="100vw"
                   alt="Profile Picture"
-                  className="w-10 h-10 rounded-full border border-gray-300 dark:border-gray-700 cursor-pointer"
+                  className="w-10 h-10 rounded-full cursor-pointer"
                 />
               </PopoverTrigger>
-              <PopoverContent className="mr-2 mt-4 w-64 p-4 bg-white dark:bg-gray-900 shadow-lg border border-gray-300 dark:border-gray-700">
-                <div className="flex flex-col items-center space-y-4">
+              <PopoverContent className="mr-2 mt-5 p-10">
+                <div className="flex flex-col items-center space-y-6">
                   <CldImage
-                    width="80"
-                    height="80"
+                    width="100"
+                    height="100"
                     src={pfpURL || '/default-avatar.png'}
                     sizes="100vw"
                     alt="Profile Picture"
-                    className="w-20 h-20 rounded-full mx-auto mb-4"
+                    className="w-30 h-30 rounded-full mx-auto"
                   />
-                  <div className="flex items-center space-x-2 mb-2">
-                    <MoonIcon className="h-6 w-6 text-gray-500 dark:text-gray-300" />
+                  <div className="flex items-center space-x-2">
+                    <MoonIcon className="h-6 w-6" />
                     <Switch
                       checked={theme === "dark"}
                       onCheckedChange={handleThemeChange}
                     />
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <LogOut />
-                  </div>
+                  <LogOut />
                 </div>
               </PopoverContent>
             </Popover>

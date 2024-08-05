@@ -6,6 +6,6 @@ export default function IncomingRFIDButton() {
   };
 
   return (
-    <Button onClick={handleScan} className="w-full mt-4">Scan Incoming RFID</Button>
+    <Button onClick={handleScan} className="mt-4">Scan Incoming RFID</Button>
   );
 }

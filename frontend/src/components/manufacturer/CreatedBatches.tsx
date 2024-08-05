@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { encodeFunctionData, getContract } from "viem";
 import {
@@ -24,6 +26,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast, Toaster } from 'sonner';
 
 interface Batch {
@@ -171,13 +174,13 @@ export default function CreatedBatchesTable() {
   };
 
   return (
-    <Card className="min-h-full">
+    <Card>
       <Toaster />
       <CardHeader>
         <CardTitle>Created Batches</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col h-full">
-        <Table className="flex-1">
+      <CardContent>
+        <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Batch ID</TableHead>
@@ -212,7 +215,7 @@ export default function CreatedBatchesTable() {
                     {batch.isRecalled
                       ? "Recalled"
                       : batch.distributor ===
-                          "0x0000000000000000000000000000000000000000"
+                        "0x0000000000000000000000000000000000000000"
                         ? "Not Assigned"
                         : "Assigned"}
                   </TableCell>

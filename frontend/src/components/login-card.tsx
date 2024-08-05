@@ -23,14 +23,14 @@ export const LogInCard = () => {
   const isAwaitingEmail = status === "AWAITING_EMAIL_AUTH";
 
   return (
-    <Card className="p-8 shadow-lg rounded-lg max-w-md mx-auto bg-white dark:bg-gray-800">
+    <Card className="p-8 shadow-lg rounded-lg max-w-md mx-auto">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-          {isAwaitingEmail ? "Check your email!" : "Log in to the Embedded Accounts Demo!"}
+        <h2 className="text-2xl font-semibold">
+          {isAwaitingEmail ? "Check your email!" : "Login to PharmaChain"}
         </h2>
       </div>
       {isAwaitingEmail ? (
-        <div className="text-center text-gray-600 dark:text-gray-400">
+        <div className="text-center">
           Check your email to complete the login process.
         </div>
       ) : (

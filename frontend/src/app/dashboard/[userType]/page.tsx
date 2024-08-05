@@ -7,18 +7,16 @@ import { useParams } from "next/navigation";
 import ManufacturerDashboard from "@/components/dashboards/ManufacturerDashboard";
 import DistributorDashboard from "@/components/dashboards/DistributorDashboard";
 import ProviderDashboard from "@/components/dashboards/ProviderDashboard";
-import Navbar from "@/components/Navbar";
 
 const Dashboard = () => {
   const params = useParams();
   const userType = params.userType;
   return (
-    <div>
-      <Navbar />
+    <main>
       {userType === "manufacturer" && <ManufacturerDashboard />}
       {userType === "distributor" && <DistributorDashboard />}
       {userType === "provider" && <ProviderDashboard />}
-    </div>
+    </main>
   );
 };
 

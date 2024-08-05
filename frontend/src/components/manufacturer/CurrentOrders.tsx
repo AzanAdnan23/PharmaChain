@@ -90,7 +90,7 @@ export default function CurrentOrdersTable() {
   }, [address]);
 
   return (
-    <Card>
+    <Card className="flex-grow">
       <CardHeader>
         <CardTitle>Current Orders</CardTitle>
       </CardHeader>

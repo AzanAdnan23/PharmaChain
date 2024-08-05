@@ -107,7 +107,7 @@ export default function CreateBatchForm() {
   };
 
   return (
-    <Card>
+    <Card className="">
       <CardHeader>
         <CardTitle>Create New Batch</CardTitle>
       </CardHeader>
@@ -126,9 +126,7 @@ export default function CreateBatchForm() {
             <label>Quantity</label>
             <Input
               type="number"
-              min={1}
               placeholder="Enter the quantity of medicine"
-              value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
               className="mb-2"
             />
@@ -157,7 +155,7 @@ export default function CreateBatchForm() {
               {loadingRFID ? <LoadingSpinner /> : "Scan RFID"}
             </Button>
           </div>
-          <Button type="submit" className="mt-4" disabled={isLoading}>
+          <Button type="submit" className="" disabled={isLoading}>
             {isLoading ? <LoadingSpinner /> : "Create Batch"}
           </Button>
         </form>
