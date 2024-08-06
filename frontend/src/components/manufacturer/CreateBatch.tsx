@@ -107,7 +107,7 @@ export default function CreateBatchForm() {
   };
 
   return (
-    <Card className="">
+    <Card className="w-full h-full">
       <CardHeader>
         <CardTitle>Create New Batch</CardTitle>
       </CardHeader>
@@ -121,6 +121,21 @@ export default function CreateBatchForm() {
               value={medicineName}
               onChange={(e) => setMedicineName(e.target.value)}
             />
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="flex-grow">
+              <label>RFID UID</label>
+              <Input
+                type="text"
+                placeholder="Enter the RFID UID"
+                value={rfidUID}
+                onChange={(e) => setRfidUID(e.target.value)}
+                className="mb-2 w-full"
+              />
+            </div>
+            <Button type="button" onClick={scanRfidDummy} className="mb-2 self-end">
+              {loadingRFID ? <LoadingSpinner /> : "Scan RFID"}
+            </Button>
           </div>
           <div>
             <label>Quantity</label>
@@ -140,22 +155,7 @@ export default function CreateBatchForm() {
               className="mb-2"
             />
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="flex-grow">
-              <label>RFID UID</label>
-              <Input
-                type="text"
-                placeholder="Enter the RFID UID"
-                value={rfidUID}
-                onChange={(e) => setRfidUID(e.target.value)}
-                className="mb-2 w-full"
-              />
-            </div>
-            <Button type="button" onClick={scanRfidDummy} className="mb-2 self-end">
-              {loadingRFID ? <LoadingSpinner /> : "Scan RFID"}
-            </Button>
-          </div>
-          <Button type="submit" className="" disabled={isLoading}>
+          <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? <LoadingSpinner /> : "Create Batch"}
           </Button>
         </form>

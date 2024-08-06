@@ -9,7 +9,6 @@ import ProviderOrdersTable from "../distributor/ProviderOrdersTable";
 import StockTable from "../distributor/StockTable";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import Navbar from "@/components/Navbar";
 
 const DistributorDashboard = () => {
   const [incomingRFID, setIncomingRFID] = useState("");
@@ -27,7 +26,6 @@ const DistributorDashboard = () => {
 
   return (
     <main className="bg-muted/40 min-h-screen">
-      <Navbar></Navbar>
     <div className="flex flex-col gap-8 p-4">
       <OrderBatchForm />
 

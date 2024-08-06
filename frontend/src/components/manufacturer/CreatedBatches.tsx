@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast, Toaster } from 'sonner';
+import { Badge } from "@/components/ui/badge";
 
 interface Batch {
   batchId: number;
@@ -174,80 +175,86 @@ export default function CreatedBatchesTable() {
   };
 
   return (
-    <Card>
-      <Toaster />
-      <CardHeader>
-        <CardTitle>Created Batches</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Batch ID</TableHead>
-              <TableHead>Medicine Name</TableHead>
-              <TableHead>Quantity</TableHead>
-              <TableHead>Manufacture Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Quality</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
+    <Card className="h-full">
+      <ScrollArea className="w-full h-full">
+        <CardHeader>
+          <CardTitle>Created Batches</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={6} className="text-center">
-                  Loading...
-                </TableCell>
+                <TableHead>Batch ID</TableHead>
+                <TableHead>Medicine Name</TableHead>
+                <TableHead>Quantity</TableHead>
+                <TableHead>Manufacture Date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Quality</TableHead>
               </TableRow>
-            ) : createdBatches.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center text-gray-500">
-                  No batches found
-                </TableCell>
-              </TableRow>
-            ) : (
-              createdBatches.map((batch) => (
-                <TableRow key={batch.batchId}>
-                  <TableCell>{batch.batchId}</TableCell>
-                  <TableCell>{batch.details}</TableCell>
-                  <TableCell>{batch.quantity}</TableCell>
-                  <TableCell>{formatDate(batch.manufactureDate)}</TableCell>
-                  <TableCell>
-                    {batch.isRecalled
-                      ? "Recalled"
-                      : batch.distributor ===
-                        "0x0000000000000000000000000000000000000000"
-                        ? "Not Assigned"
-                        : "Assigned"}
-                  </TableCell>
-                  <TableCell>
-                    {batch.qualityApproved ? (
-                      "Approved"
-                    ) : batch.QualityDisapproved ? (
-                      "Not Approved"
-                    ) : (
-                      <>
-                        <Button
-                          onClick={() => handleAccept(batch.batchId)}
-                          disabled={isSendingUserOperation}
-                        >
-                          Approve
-                        </Button>
-                        <Button
-                          onClick={() => handleReject(batch.batchId)}
-                          className="ml-2"
-                          disabled={isSendingUserOperation}
-                        >
-                          Disapprove
-                        </Button>
-                      </>
-                    )}
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center">
+                    Loading...
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
+              ) : createdBatches.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-gray-500">
+                    No batches found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                createdBatches.map((batch) => (
+                  <TableRow key={batch.batchId}>
+                    <TableCell>{batch.batchId}</TableCell>
+                    <TableCell>{batch.details}</TableCell>
+                    <TableCell>{batch.quantity}</TableCell>
+                    <TableCell>{formatDate(batch.manufactureDate)}</TableCell>
+                    <TableCell>
+                      {batch.isRecalled
+                        ? "Recalled"
+                        : batch.distributor ===
+                          "0x0000000000000000000000000000000000000000"
+                          ? "Not Assigned"
+                          : "Assigned"}
+                    </TableCell>
+                    <TableCell>
+                      {batch.qualityApproved ? (
+                        <>
+                          <span className="text-green-500">Approved</span>
+                        </>
+                      ) : batch.QualityDisapproved ? (
+                        <>
+                          <span className="text-red-500">Disapproved</span>
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            onClick={() => handleAccept(batch.batchId)}
+                            disabled={isSendingUserOperation}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            onClick={() => handleReject(batch.batchId)}
+                            className="ml-2"
+                            disabled={isSendingUserOperation}
+                          >
+                            Disapprove
+                          </Button>
+                        </>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+        <Toaster />
+      </ScrollArea>
     </Card>
   );
 }

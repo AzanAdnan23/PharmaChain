@@ -212,7 +212,7 @@ export default function OrdersFulfilledTable() {
   };
 
   return (
-    <Card>
+    <Card className="w-full h-full">
       <CardHeader>
         <CardTitle>Orders Fulfilled</CardTitle>
       </CardHeader>
