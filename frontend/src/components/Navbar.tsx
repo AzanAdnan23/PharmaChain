@@ -148,17 +148,16 @@ const Navbar = () => {
                   className="w-10 h-10 rounded-full cursor-pointer"
                 />
               </PopoverTrigger>
-              <PopoverContent className="p-10">
-                <div className="flex flex-col items-center space-y-6">
+              <PopoverContent className="w-fit p-10">
+                <div className="flex flex-col items-center gap-4">
                   <CldImage
                     width="100"
                     height="100"
                     src={pfpURL || '/default-avatar.png'}
-                    sizes="100vw"
                     alt="Profile Picture"
-                    className="w-30 h-30 rounded-full mx-auto"
+                    className="rounded-full"
                   />
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center gap-1">
                     <MoonIcon className="h-6 w-6" />
                     <Switch
                       checked={theme === "dark"}
