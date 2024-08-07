@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { LoadingSpinner } from "../ui/loading-spinner";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface StockItem {
   medName: string;
@@ -62,7 +63,8 @@ export default function StockTable() {
   }, [address]);
 
   return (
-    <Card>
+    <Card className="h-full">
+      <ScrollArea className="h-full w-full">
       <CardHeader>
         <CardTitle>Stock</CardTitle>
       </CardHeader>
@@ -78,11 +80,20 @@ export default function StockTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {stockItems.length === 0 ? (
+            {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={2}>No stock items found.</TableCell>
+                  <TableCell colSpan={5} className="text-center">
+                    Loading...
+                  </TableCell>
                 </TableRow>
-              ) : (
+              ) :
+                stockItems.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-gray-500">
+                      Nothing in stock.
+                    </TableCell>
+                  </TableRow>
+                ) : (
                 stockItems.map((item) => (
                   <TableRow key={item.medName}>
                     <TableCell>{item.medName}</TableCell>
@@ -94,6 +105,7 @@ export default function StockTable() {
           </Table>
         )}
       </CardContent>
+      </ScrollArea>
     </Card>
   );
 }

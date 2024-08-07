@@ -19,6 +19,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface DistributorOrder {
   orderId: number;
@@ -126,7 +127,8 @@ export default function FulfilledDistributorsOrdersTable() {
   };
 
   return (
-    <Card>
+    <Card className="h-full">
+      <ScrollArea className="h-full w-full">
       <CardHeader>
         <CardTitle>Fulfilled Orders</CardTitle>
       </CardHeader>
@@ -145,11 +147,20 @@ export default function FulfilledDistributorsOrdersTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={8}>Loading...</TableCell>
-              </TableRow>
-            ) : (
+          {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center">
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) :
+                fulfilledOrders.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center text-gray-500">
+                      No orders fulfilled.
+                    </TableCell>
+                  </TableRow>
+                ) : (
               fulfilledOrders.map((order) => (
                 <TableRow key={order.orderId}>
                   <TableCell>{order.orderId}</TableCell>
@@ -168,6 +179,7 @@ export default function FulfilledDistributorsOrdersTable() {
           </TableBody>
         </Table>
       </CardContent>
+      </ScrollArea>
     </Card>
   );
 }

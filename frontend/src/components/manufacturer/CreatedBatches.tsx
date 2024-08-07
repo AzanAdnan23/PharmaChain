@@ -202,7 +202,7 @@ export default function CreatedBatchesTable() {
               ) : createdBatches.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center text-gray-500">
-                    No batches found
+                    No batches found.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -223,21 +223,23 @@ export default function CreatedBatchesTable() {
                     <TableCell>
                       {batch.qualityApproved ? (
                         <>
-                          <span className="text-green-500">Approved</span>
+                          <Badge className="text-secondary dark:text-primary rounded-sm bg-green-700">Approved</Badge>
                         </>
                       ) : batch.QualityDisapproved ? (
                         <>
-                          <span className="text-red-500">Disapproved</span>
+                          <Badge className="text-secondary dark:text-primary rounded-sm bg-red-700">Disapproved</Badge>
                         </>
                       ) : (
                         <>
                           <Button
+                            variant="outline"
                             onClick={() => handleAccept(batch.batchId)}
                             disabled={isSendingUserOperation}
                           >
                             Approve
                           </Button>
                           <Button
+                            variant="outline"
                             onClick={() => handleReject(batch.batchId)}
                             className="ml-2"
                             disabled={isSendingUserOperation}

@@ -43,7 +43,7 @@ export default function Login() {
   }, [userRole, router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <div className="flex min-h-screen items-center justify-center bg-muted/40">
       <div className="w-full max-w-md">
       {isLoading ? (
               <div className="flex justify-center">

@@ -94,14 +94,14 @@ const OrderBatchForm = () => {
   };
 
   return (
-    <Card>
+    <Card className="w-full h-full">
       <CardHeader>
         <CardTitle>Order Batch</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="">
               Medicine Name
             </label>
             <Input
@@ -109,7 +109,7 @@ const OrderBatchForm = () => {
                 required: "Medicine name is required",
               })}
               placeholder="Enter medicine name"
-              className="mt-1"
+              className="mt-1 bg-secondary"
             />
             {errors.medicineName && (
               <p className="text-sm text-red-500">
@@ -118,7 +118,7 @@ const OrderBatchForm = () => {
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="">
               Order Quantity
             </label>
             <Input
@@ -128,7 +128,7 @@ const OrderBatchForm = () => {
                 min: { value: 1, message: "Order quantity must be at least 1" },
               })}
               placeholder="Enter order quantity"
-              className="mt-1"
+              className="mt-1 mb-2 bg-secondary"
             />
             {errors.orderQuantity && (
               <p className="text-sm text-red-500">
@@ -136,7 +136,7 @@ const OrderBatchForm = () => {
               </p>
             )}
           </div>
-          <Button type="submit" className="" disabled={isLoading}>
+          <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Placing Order..." : "Place Order"}
           </Button>
         </form>

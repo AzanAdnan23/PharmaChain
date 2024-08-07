@@ -27,6 +27,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"; // Import Dialog components
 import { Input } from "@/components/ui/input";
 import { toast, Toaster } from "sonner";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 interface Order {
   orderId: number;
@@ -89,58 +91,97 @@ export default function CurrentOrdersTable() {
     fetchPendingOrders();
   }, [address]);
 
+  const { client } = useSmartAccountClient({
+    type: accountType,
+    gasManagerConfig,
+    opts,
+  });
+
+  const {
+    sendUserOperation,
+    isSendingUserOperation,
+    error: isSendUserOperationError,
+    sendUserOperationResult,
+  } = useSendUserOperation({ client, waitForTxn: true });
+
+  useEffect(() => {
+    if (!isSendingUserOperation && sendUserOperationResult) {
+      window.location.reload();
+    }
+  }, [isSendingUserOperation]);
+
   return (
-    <Card className="w-full h-full">
-      <CardHeader>
-        <CardTitle>Current Orders</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Order ID</TableHead>
-              <TableHead>Medicine Name</TableHead>
-              <TableHead>Quantity</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders.map((order) => (
-              <TableRow key={order.orderId}>
-                <TableCell>{order.orderId}</TableCell>
-                <TableCell>{order.medName}</TableCell>
-                <TableCell>{order.quantity}</TableCell>
-                <TableCell>{order.status}</TableCell>
-                <TableCell>
-                  <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button onClick={() => setSelectedOrder(order)}>
-                        Assign to Distributor
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Assign Order</DialogTitle>
-                      </DialogHeader>
-                      {selectedOrder && (
-                        <AssignToDistributorForm
-                          order={selectedOrder}
-                          onClose={() => {
-                            setSelectedOrder(null);
-                            setDialogOpen(false);
-                          }}
-                        />
-                      )}
-                    </DialogContent>
-                  </Dialog>
-                </TableCell>
+    <Card className="h-full">
+      <ScrollArea className="w-full h-full">
+        <CardHeader>
+          <CardTitle>Current Orders</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Order ID</TableHead>
+                <TableHead>Medicine Name</TableHead>
+                <TableHead>Quantity</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-      <Toaster />
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center">
+                    Loading...
+                  </TableCell>
+                </TableRow>) :
+                orders.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-gray-500">
+                      No orders found.
+                    </TableCell>
+                  </TableRow>
+                ) :
+
+                  orders.map((order) => (
+                    <TableRow key={order.orderId}>
+                      <TableCell>{order.orderId}</TableCell>
+                      <TableCell>{order.medName}</TableCell>
+                      <TableCell>{order.quantity}</TableCell>
+                      <TableCell>
+                        <Badge className="text-secondary dark:text-primary rounded-sm bg-yellow-700">
+                          {order.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" onClick={() => setSelectedOrder(order)}>
+                              Assign to Distributor
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Assign Order</DialogTitle>
+                            </DialogHeader>
+                            {selectedOrder && (
+                              <AssignToDistributorForm
+                                order={selectedOrder}
+                                onClose={() => {
+                                  setSelectedOrder(null);
+                                  setDialogOpen(false);
+                                }}
+                              />
+                            )}
+                          </DialogContent>
+                        </Dialog>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+        <Toaster />
+      </ScrollArea>
     </Card>
   );
 }
@@ -167,12 +208,6 @@ function AssignToDistributorForm({
     error: isSendUserOperationError,
     sendUserOperationResult,
   } = useSendUserOperation({ client, waitForTxn: true });
-
-  useEffect(() => {
-    if (!isSendingUserOperation && sendUserOperationResult) {
-      window.location.reload();
-    }
-  }, [isSendingUserOperation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -235,7 +270,7 @@ function AssignToDistributorForm({
       <Button type="submit" className="mt-4" disabled={isLoading}>
         {isLoading ? <LoadingSpinner /> : "Assign"}
       </Button>
-      <Button type="button" onClick={onClose} className="ml-2">
+      <Button variant="destructive" type="button" onClick={onClose} className="ml-2">
         Cancel
       </Button>
     </form>

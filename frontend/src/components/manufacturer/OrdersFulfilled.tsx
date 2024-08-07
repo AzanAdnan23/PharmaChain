@@ -23,6 +23,9 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
+import { toast, Toaster } from "sonner";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 interface Batch {
   batchId: number;
@@ -65,10 +68,16 @@ export default function OrdersFulfilledTable() {
     gasManagerConfig,
     opts,
   });
-  const { sendUserOperation, isSendingUserOperation } = useSendUserOperation({
+  const { sendUserOperation, isSendingUserOperation, sendUserOperationResult } = useSendUserOperation({
     client,
     waitForTxn: true,
   });
+
+  useEffect(() => {
+    if (!isSendingUserOperation && sendUserOperationResult) {
+      window.location.reload();
+    }
+  }, [isSendingUserOperation]);
 
   const [orders, setOrders] = useState<Batch[]>([]);
   const [distributorOrders, setDistributorOrders] = useState<{
@@ -203,6 +212,7 @@ export default function OrdersFulfilledTable() {
       });
 
       console.log("Batch recalled successfully");
+      toast.success("Batch recalled successfully");
       fetchFullfiledOrders(); // Refresh the orders list after recall
     } catch (error) {
       console.error("Error recalling batch:", error);
@@ -212,7 +222,8 @@ export default function OrdersFulfilledTable() {
   };
 
   return (
-    <Card className="w-full h-full">
+    <Card className="h-full">
+      <ScrollArea className="w-full h-full">
       <CardHeader>
         <CardTitle>Orders Fulfilled</CardTitle>
       </CardHeader>
@@ -233,64 +244,78 @@ export default function OrdersFulfilledTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orders.length === 0 ? (
+              {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7}>No fulfilled orders found.</TableCell>
+                  <TableCell colSpan={6} className="text-center">
+                    Loading...
+                  </TableCell>
                 </TableRow>
-              ) : (
-                orders.map((order) => (
-                  <TableRow key={order.batchId}>
-                    <TableCell>{order.batchId}</TableCell>
-                    <TableCell>{order.details}</TableCell>
-                    <TableCell>{order.quantity}</TableCell>
-                    <TableCell>
-                      {distributorInfo[order.distributor] ? (
-                        <>
-                          <div>
-                            {distributorInfo[order.distributor].companyName}
-                          </div>
-                          <div>
-                            {distributorInfo[order.distributor].contactInfo}
-                          </div>
-                        </>
-                      ) : (
-                        "Loading..."
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {distributorOrders[order.orderId]
-                        ? new Date(
-                            distributorOrders[order.orderId].orderDate * 1000,
-                          ).toLocaleString()
-                        : "Loading..."}
-                    </TableCell>
-                    <TableCell>
-                      {distributorOrders[order.orderId]
-                        ? new Date(
-                            distributorOrders[order.orderId].orderApprovedDate *
-                              1000,
-                          ).toLocaleString()
-                        : "Loading..."}
-                    </TableCell>
-                    <TableCell>
-                      {order.isRecalled ? (
-                        <span>Recalled</span>
-                      ) : (
-                        <Button
-                          onClick={() => handleRecall(order.batchId)}
-                          disabled={isRecallLoading}
-                        >
-                          {isRecallLoading ? "Recalling..." : "Recall"}
-                        </Button>
-                      )}
+              ) :
+                orders.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-gray-500">
+                      No orders fulfilled.
                     </TableCell>
                   </TableRow>
-                ))
-              )}
+                ) : (
+                  orders.map((order) => (
+                    <TableRow key={order.batchId}>
+                      <TableCell>{order.batchId}</TableCell>
+                      <TableCell>{order.details}</TableCell>
+                      <TableCell>{order.quantity}</TableCell>
+                      <TableCell>
+                        {distributorInfo[order.distributor] ? (
+                          <>
+                            <div>
+                              {distributorInfo[order.distributor].companyName}
+                            </div>
+                            <div>
+                              {distributorInfo[order.distributor].contactInfo}
+                            </div>
+                          </>
+                        ) : (
+                          "Loading..."
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {distributorOrders[order.orderId]
+                          ? new Date(
+                            distributorOrders[order.orderId].orderDate * 1000,
+                          ).toLocaleString()
+                          : "Loading..."}
+                      </TableCell>
+                      <TableCell>
+                        {distributorOrders[order.orderId]
+                          ? new Date(
+                            distributorOrders[order.orderId].orderApprovedDate *
+                            1000,
+                          ).toLocaleString()
+                          : "Loading..."}
+                      </TableCell>
+                      <TableCell>
+                        {order.isRecalled ? (
+                          <Badge className="text-secondary dark:text-primary rounded-sm bg-red-700">
+                            Recalled
+                          </Badge>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            onClick={() => handleRecall(order.batchId)}
+                            disabled={isRecallLoading}
+                          >
+                            {isRecallLoading ? "Recalling..." : "Recall"}
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
             </TableBody>
           </Table>
         )}
       </CardContent>
+      <Toaster />
+      </ScrollArea>
     </Card>
   );
 }

@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input"; // Ensure Input is correctly imported
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 enum OrderStatus {
   Pending = "Pending",
@@ -39,7 +40,7 @@ interface ProviderOrder {
   status: OrderStatus;
 }
 
-interface Order extends ProviderOrder {} // For consistency
+interface Order extends ProviderOrder { } // For consistency
 
 export default function ProviderOrdersTable() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -81,47 +82,63 @@ export default function ProviderOrdersTable() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Provider Orders</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Order ID</TableHead>
-              <TableHead>Medicine Name</TableHead>
-              <TableHead>Quantity</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders.map((order) => (
-              <TableRow
-                key={order.orderId}
-                onClick={() => setSelectedOrder(order)}
-              >
-                <TableCell>{order.orderId}</TableCell>
-                <TableCell>{order.medName}</TableCell>
-                <TableCell>{order.quantity}</TableCell>
-                <TableCell>{order.status}</TableCell>
-                <TableCell>
-                  <Button onClick={() => handleAssign()}>
-                    Assign to Provider
-                  </Button>
-                </TableCell>
+    <Card className="h-full">
+      <ScrollArea className="h-full w-full">
+        <CardHeader>
+          <CardTitle>Provider Orders</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Order ID</TableHead>
+                <TableHead>Medicine Name</TableHead>
+                <TableHead>Quantity</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        {selectedOrder && (
-          <AssignToProviderForm
-            order={selectedOrder}
-            onClose={() => setSelectedOrder(null)}
-          />
-        )}
-      </CardContent>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center">
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) :
+                orders.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-gray-500">
+                      No orders from provider.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  orders.map((order) => (
+                    <TableRow
+                      key={order.orderId}
+                      onClick={() => setSelectedOrder(order)}
+                    >
+                      <TableCell>{order.orderId}</TableCell>
+                      <TableCell>{order.medName}</TableCell>
+                      <TableCell>{order.quantity}</TableCell>
+                      <TableCell>{order.status}</TableCell>
+                      <TableCell>
+                        <Button onClick={() => handleAssign()}>
+                          Assign to Provider
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )))}
+            </TableBody>
+          </Table>
+          {selectedOrder && (
+            <AssignToProviderForm
+              order={selectedOrder}
+              onClose={() => setSelectedOrder(null)}
+            />
+          )}
+        </CardContent>
+      </ScrollArea>
     </Card>
   );
 }

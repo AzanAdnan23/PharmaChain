@@ -116,6 +116,7 @@ export default function CreateBatchForm() {
           <div>
             <label>Medicine Name</label>
             <Input
+              className="bg-secondary"
               type="text"
               placeholder="Enter the name of the medicine"
               value={medicineName}
@@ -130,10 +131,10 @@ export default function CreateBatchForm() {
                 placeholder="Enter the RFID UID"
                 value={rfidUID}
                 onChange={(e) => setRfidUID(e.target.value)}
-                className="mb-2 w-full"
+                className="mb-2 w-full bg-secondary"
               />
             </div>
-            <Button type="button" onClick={scanRfidDummy} className="mb-2 self-end">
+            <Button variant="outline" type="button" onClick={scanRfidDummy} className="mb-2 self-end">
               {loadingRFID ? <LoadingSpinner /> : "Scan RFID"}
             </Button>
           </div>
@@ -143,7 +144,7 @@ export default function CreateBatchForm() {
               type="number"
               placeholder="Enter the quantity of medicine"
               onChange={(e) => setQuantity(Number(e.target.value))}
-              className="mb-2"
+              className="mb-2 bg-secondary"
             />
           </div>
           <div>
@@ -152,7 +153,7 @@ export default function CreateBatchForm() {
               type="date"
               value={expiryDate}
               onChange={(e) => setExpiryDate(e.target.value)}
-              className="mb-2"
+              className="mb-2 bg-secondary"
             />
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>

@@ -1,74 +1,49 @@
 "use client";
 
 // src/app/dashboard/distributor/page.tsx
-import { useState } from "react";
 import OrderBatchForm from "../distributor/OrderBatchForm";
-import BatchDetailsTable from "../distributor/OrderedBatches";
+import CurrentOrderBatches from "../distributor/CurrentOrderBatches";
 import FulfilledDistributorsOrdersTable from "../distributor/FullfiledDistributorsOrders";
 import ProviderOrdersTable from "../distributor/ProviderOrdersTable";
 import StockTable from "../distributor/StockTable";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { DistributorRFID } from "../distributor/DistributorRFID";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { PChart } from "@/components/charts/PChart"
 
 const DistributorDashboard = () => {
-  const [incomingRFID, setIncomingRFID] = useState("");
-  const [outgoingRFID, setOutgoingRFID] = useState("");
-
-  const handleIncomingRFID = () => {
-    // Handle incoming RFID logic
-    console.log("Incoming RFID:", incomingRFID);
-  };
-
-  const handleOutgoingRFID = () => {
-    // Handle outgoing RFID logic
-    console.log("Outgoing RFID:", outgoingRFID);
-  };
-
   return (
-    <main className="bg-muted/40 min-h-screen">
-    <div className="flex flex-col gap-8 p-4">
-      <OrderBatchForm />
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-        <BatchDetailsTable />
-        <StockTable />
+    <main className="p-4 grid grid-cols-4 gap-4 flex-grow">
+      <div className="col-span-1 flex flex-col gap-4">
+        <div className="">
+          <OrderBatchForm />
+        </div>
+        <div className="">
+          <DistributorRFID />
+        </div>
+        <PChart chartTitle="Orders" chartDescription="" />
       </div>
-      <FulfilledDistributorsOrdersTable />
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-        <ProviderOrdersTable />
-        <Card>
-          <CardHeader>
-            <CardTitle>RFID Scanning</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {/* <Button onClick={handleIncomingRFID} variant="primary" className="w-full">
-                Scan Incoming RFID
-              </Button> */}
-              <Button onClick={handleIncomingRFID} className="w-full">
-                Scan Incoming RFID
-              </Button>
-              <Button
-                onClick={handleOutgoingRFID}
-                variant="secondary"
-                className="w-full"
-              >
-                Scan Outgoing RFID
-              </Button>
-              <div className="mt-2 space-y-2">
-                <div className="text-gray-600">
-                  Incoming RFID: {incomingRFID}
-                </div>
-                <div className="text-gray-600">
-                  Outgoing RFID: {outgoingRFID}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="col-span-3">
+        <Tabs defaultValue="currentorders" className="h-full flex flex-col">
+          <TabsList className="w-fit">
+            <TabsTrigger value="currentorders">Current Orders</TabsTrigger>
+            <TabsTrigger value="fulfilledorders">Fulfilled Orders</TabsTrigger>
+            <TabsTrigger value="providerorders">Provider Orders</TabsTrigger>
+            <TabsTrigger value="stock">Stock</TabsTrigger>
+          </TabsList>
+          <TabsContent value="fulfilledorders" className="flex-grow">
+            <FulfilledDistributorsOrdersTable />
+          </TabsContent>
+          <TabsContent value="currentorders" className="flex-grow">
+            <CurrentOrderBatches />
+          </TabsContent>
+          <TabsContent value="providerorders" className="flex-grow">
+            <ProviderOrdersTable />
+          </TabsContent>
+          <TabsContent value="stock" className="flex-grow">
+            <StockTable />
+          </TabsContent>
+        </Tabs>
       </div>
-    </div>
     </main>
   );
 };

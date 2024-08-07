@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { LoadingSpinner } from "../ui/loading-spinner";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 enum OrderStatus {
   Pending,
@@ -39,7 +41,7 @@ interface DistributorOrder {
   status: OrderStatus; // Enum type for status
 }
 
-export default function CreatedOrderBatches() {
+export default function CurrentOrderBatches() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [createdOrders, setCreatedOrders] = useState<DistributorOrder[]>([]);
 
@@ -84,42 +86,55 @@ export default function CreatedOrderBatches() {
   }, [address]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Current Orders</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <LoadingSpinner /> // Show a loading spinner while fetching data
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Order ID</TableHead>
-                <TableHead>Medicine Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Quantity</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {createdOrders.length === 0 ? (
+    <Card className="h-full">
+      <ScrollArea className="h-full w-full">
+        <CardHeader>
+          <CardTitle>Current Orders</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <LoadingSpinner /> // Show a loading spinner while fetching data
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={4}>No orders found.</TableCell>
+                  <TableHead>Order ID</TableHead>
+                  <TableHead>Medicine Name</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Quantity</TableHead>
                 </TableRow>
-              ) : (
-                createdOrders.map((order) => (
-                  <TableRow key={order.orderId}>
-                    <TableCell>{order.orderId}</TableCell>
-                    <TableCell>{order.medName}</TableCell>
-                    <TableCell>{OrderStatus[order.status]}</TableCell>
-                    <TableCell>{order.quantity}</TableCell>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center">
+                      Loading...
+                    </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
+                ) :
+                  createdOrders.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center text-gray-500">
+                        No current orders.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    createdOrders.map((order) => (
+                      <TableRow key={order.orderId}>
+                        <TableCell>{order.orderId}</TableCell>
+                        <TableCell>{order.medName}</TableCell>
+                        <TableCell>
+                            {OrderStatus[order.status]}
+                        </TableCell>
+                        <TableCell>{order.quantity}</TableCell>
+                      </TableRow>
+                    ))
+                  )}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </ScrollArea>
     </Card>
   );
 }

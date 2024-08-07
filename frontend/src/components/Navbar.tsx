@@ -65,9 +65,9 @@ const Navbar = () => {
   }
 
   return (
-    <header className="flex h-20 items-center justify-between border-b px-4 bg-background">
+    <header className="flex items-center justify-between border-b p-4 bg-background">
       <nav className="flex items-center">
-        <Link href="/" className="text-xl font-semibold">
+        <Link href="/" className="text-lg font-medium">
           PharmaChain
         </Link>
       </nav>
@@ -92,7 +92,7 @@ const Navbar = () => {
                   className="w-10 h-10 rounded-full cursor-pointer"
                 />
               </PopoverTrigger>
-              <PopoverContent className="mr-2 mt-5 p-10">
+              <PopoverContent className="p-10">
                 <div className="flex flex-col items-center space-y-6">
                   <CldImage
                     width="100"
