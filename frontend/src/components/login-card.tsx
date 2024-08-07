@@ -40,7 +40,7 @@ export const LogInCard = () => {
             placeholder="Enter your email"
             value={email}
             onChange={onEmailChange}
-            className="mb-2"
+            className="mb-2 bg-secondary"
           />
           <Button
             type="submit"
