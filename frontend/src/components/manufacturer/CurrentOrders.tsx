@@ -264,7 +264,7 @@ function AssignToDistributorForm({
         placeholder="Batch ID"
         value={batchID}
         onChange={(e) => setBatchID(e.target.value)}
-        className="mb-2"
+        className="mb-2 bg-secondary"
         required
       />
       <Button type="submit" className="mt-4" disabled={isLoading}>
