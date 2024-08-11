@@ -5,17 +5,12 @@ import CreateBatchForm from "../manufacturer/CreateBatch";
 import CreatedBatchesTable from "../manufacturer/CreatedBatches";
 import CurrentOrdersTable from "../manufacturer/CurrentOrders";
 import OrdersFulfilledTable from "../manufacturer/OrdersFulfilled";
+import OutgoingRFID from "../manufacturer/OutgoingRFID";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BChart } from "@/components/charts/BChart"
-import { Button } from "@/components/ui/button"
 
 
 const ManufacturerDashboard = () => {
-
-  const OutgoingRFID = () => {
-    console.log("Outgoing RFID stuff");
-  }
-
   return (
     <main className="p-4 grid grid-cols-4 gap-4 flex-grow">
       <div className="col-span-1 flex flex-col gap-4">
@@ -23,7 +18,7 @@ const ManufacturerDashboard = () => {
           <CreateBatchForm />
         </div>
         <BChart chartTitle="Popular Orders" chartDescription="" />
-        <Button onClick={OutgoingRFID} className="w-full">Outgoing RFID</Button>
+        <OutgoingRFID />
       </div>
       <div className="col-span-3">
         <Tabs defaultValue="createdbatches" className="h-full flex flex-col">
