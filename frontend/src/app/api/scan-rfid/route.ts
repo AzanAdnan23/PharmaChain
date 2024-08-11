@@ -1,7 +1,7 @@
 import { SerialPort } from 'serialport';
 
 export async function GET() {
-  const portName = 'COM10'; // Update this as needed
+  const portName = 'COM7'; // Update this as needed
   const baudRate = 115200;
   
   const port = new SerialPort({

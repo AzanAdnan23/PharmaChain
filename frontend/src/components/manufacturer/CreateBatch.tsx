@@ -19,7 +19,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "../ui/loading-spinner";
-import { toast, Toaster } from 'sonner';
+import { toast, Toaster } from "sonner";
 
 export default function CreateBatchForm() {
   const [rfidUID, setRfidUID] = useState("");
@@ -57,10 +57,10 @@ export default function CreateBatchForm() {
 
     const uoCallData = client
       ? encodeFunctionData({
-        abi: ContractAbi,
-        functionName: "createBatch",
-        args: [medicineName, rfidUID, expiryTimestamp, quantity],
-      })
+          abi: ContractAbi,
+          functionName: "createBatch",
+          args: [medicineName, rfidUID, expiryTimestamp, quantity],
+        })
       : null;
     if (!client || !uoCallData) {
       console.error("Client not initialized or uoCallData is null");
@@ -75,7 +75,7 @@ export default function CreateBatchForm() {
         },
       });
       console.log("Batch created successfully by this address", address);
-      toast.success('Batch created successfully');
+      toast.success("Batch created successfully");
     } catch (error) {
       console.error("Error creating batch:", error);
     } finally {
@@ -90,24 +90,25 @@ export default function CreateBatchForm() {
   const scanRfid = async () => {
     setLoadingRFID(true); // Start loading
     try {
-      const response = await fetch('/api/scan-rfid');
+      const response = await fetch("/api/scan-rfid");
       const text = await response.text();
       setRfidUID(text);
-      toast.success('RFID scanned successfully');
+      toast.success("RFID scanned successfully");
     } catch (error) {
-      console.error('Error scanning RFID:', error);
+      console.error("Error scanning RFID:", error);
     } finally {
       setLoadingRFID(false); // End loading
     }
   };
 
   const scanRfidDummy = async () => {
-    const arbitraryRfidUID = "0x00000000000000000000000000000000000000000000000000000000000004d2";
+    const arbitraryRfidUID =
+      "0x00000000000000000000000000000000000000000000000000000000000004d2";
     setRfidUID(arbitraryRfidUID);
   };
 
   return (
-    <Card className="w-full h-full">
+    <Card className="h-full w-full">
       <CardHeader>
         <CardTitle>Create New Batch</CardTitle>
       </CardHeader>
@@ -134,7 +135,12 @@ export default function CreateBatchForm() {
                 className="mb-2 w-full bg-secondary"
               />
             </div>
-            <Button variant="outline" type="button" onClick={scanRfidDummy} className="mb-2 self-end">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={scanRfidDummy}
+              className="mb-2 self-end"
+            >
               {loadingRFID ? <LoadingSpinner /> : "Scan RFID"}
             </Button>
           </div>

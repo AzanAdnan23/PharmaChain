@@ -80,6 +80,9 @@ contract PharmaChain {
     mapping(address => string[]) public distributorMedNames;
     mapping(address => string[]) public providerMedNames;
 
+    mapping(bytes32 => uint256) public rfidToDistributorOrderId;
+    mapping(bytes32 => uint256) public rfidToProviderOrderId;
+
     uint256 public nextBatchId = 100;
 
     uint256 public nextDistributorOrderId = 100;
@@ -301,6 +304,8 @@ contract PharmaChain {
         order.status = OrderStatus.Approved;
         order.orderApprovedDate = block.timestamp;
 
+        rfidToDistributorOrderId[batch.rfidUIDHash] = _orderId;
+
         emit BatchAssignedToDistributor(_batchId, _distributor);
     }
 
@@ -377,11 +382,14 @@ contract PharmaChain {
         });
     }
 
-    function updateDistributorOrderStatus(
-        uint256 _orderId,
+    function updateDistributorOrderStatusByRFID(
+        bytes32 _rfidUIDHash,
         OrderStatus _status
     ) external onlyDistributor {
-        DistributorOrder storage order = distributorOrders[_orderId];
+        uint256 orderId = rfidToDistributorOrderId[_rfidUIDHash];
+        require(orderId != 0, "Order not found for the given RFID UID");
+
+        DistributorOrder storage order = distributorOrders[orderId];
         require(
             order.distributor == msg.sender,
             "Only the distributor can update the order status"
@@ -428,6 +436,9 @@ contract PharmaChain {
         });
 
         providerOrders[order.orderId] = order;
+
+        // Map RFID UID to provider order ID
+        rfidToProviderOrderId[batch.rfidUIDHash] = order.orderId;
 
         providerStocks[_provider][batch.details] += batch.quantity;
         if (!_medNameExistsInList(_provider, batch.details, false)) {
@@ -522,6 +533,14 @@ contract PharmaChain {
         return orders;
     }
 
+    function getDistributorOrderByRFID(
+        bytes32 _rfidUIDHash
+    ) external view returns (DistributorOrder memory) {
+        uint256 orderId = rfidToDistributorOrderId[_rfidUIDHash];
+        require(orderId != 0, "Order not found for the given RFID UID");
+        return distributorOrders[orderId];
+    }
+
     // STOCK FUNCTION
     function getDistributorStock(
         address _distributor
@@ -559,6 +578,32 @@ contract PharmaChain {
             status: OrderStatus.Pending,
             orderApprovedDate: 0
         });
+    }
+
+    function updateProviderOrderStatusByRFID(
+        bytes32 _rfidUIDHash,
+        OrderStatus _status
+    ) external onlyProvider {
+        uint256 orderId = rfidToProviderOrderId[_rfidUIDHash];
+        require(orderId != 0, "Order not found for the given RFID UID");
+
+        ProviderOrder storage order = providerOrders[orderId];
+        require(
+            order.provider == msg.sender,
+            "Only the provider can update the order status"
+        );
+
+        order.status = _status;
+
+        if (_status == OrderStatus.Reached) {
+            // Update provider's stock when order status changes to Reached
+            providerStocks[msg.sender][order.medName] += order.quantity;
+
+            // Add medName to provider's medName list if not already present
+            if (!_medNameExistsInList(msg.sender, order.medName, false)) {
+                providerMedNames[msg.sender].push(order.medName);
+            }
+        }
     }
 
     function getProviderOrderDetails(
@@ -649,6 +694,25 @@ contract PharmaChain {
         }
 
         return fulfilledOrders;
+    }
+
+    function getProviderOrderIdByRFID(
+        bytes32 _rfidUIDHash
+    ) public view returns (uint256) {
+        for (uint256 i = 100; i < nextBatchId; i++) {
+            if (batches[i].rfidUIDHash == _rfidUIDHash) {
+                return batches[i].orderId;
+            }
+        }
+        return 0;
+    }
+
+    function getProviderOrderByRFID(
+        bytes32 _rfidUIDHash
+    ) external view returns (ProviderOrder memory) {
+        uint256 orderId = rfidToProviderOrderId[_rfidUIDHash];
+        require(orderId != 0, "Order not found for the given RFID UID");
+        return providerOrders[orderId];
     }
 
     // STOCK FUNCTIONS
