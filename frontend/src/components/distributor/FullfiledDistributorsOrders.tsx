@@ -60,7 +60,7 @@ export default function FulfilledDistributorsOrdersTable() {
         client: publicClient,
       });
 
-      const result: any = await PharmaChain.read.getDistributorOrders([
+      const result: any = await PharmaChain.read.getFulfilledDistributorOrders([
         address,
       ]);
       const formattedOrders: DistributorOrder[] = result.map((order: any) => ({
@@ -129,56 +129,55 @@ export default function FulfilledDistributorsOrdersTable() {
   return (
     <Card className="h-full">
       <ScrollArea className="h-full w-full">
-      <CardHeader>
-        <CardTitle>Fulfilled Orders</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Order ID</TableHead>
-              <TableHead>Medicine Name</TableHead>
-              <TableHead>Quantity</TableHead>
-              <TableHead>Manufacturer Name</TableHead>
-              <TableHead>Manufacturer Email</TableHead>
-              <TableHead>Order Date</TableHead>
-              <TableHead>Order Approved Date</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-          {isLoading ? (
+        <CardHeader>
+          <CardTitle>Fulfilled Orders</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Order ID</TableHead>
+                <TableHead>Medicine Name</TableHead>
+                <TableHead>Quantity</TableHead>
+                <TableHead>Manufacturer Name</TableHead>
+                <TableHead>Manufacturer Email</TableHead>
+                <TableHead>Order Date</TableHead>
+                <TableHead>Order Approved Date</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center">
                     Loading...
                   </TableCell>
                 </TableRow>
-              ) :
-                fulfilledOrders.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center text-gray-500">
-                      No orders fulfilled.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-              fulfilledOrders.map((order) => (
-                <TableRow key={order.orderId}>
-                  <TableCell>{order.orderId}</TableCell>
-                  <TableCell>{order.medName}</TableCell>
-                  <TableCell>{order.quantity}</TableCell>
-                  <TableCell>{order.manufacturerName || "N/A"}</TableCell>
-                  <TableCell>{order.manufacturerEmail || "N/A"}</TableCell>
-                  <TableCell>{formatDateTime(order.orderDate)}</TableCell>
-                  <TableCell>
-                    {formatDateTime(order.orderApprovedDate)}
+              ) : fulfilledOrders.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center text-gray-500">
+                    No orders fulfilled.
                   </TableCell>
-                  <TableCell>{order.status}</TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
+              ) : (
+                fulfilledOrders.map((order) => (
+                  <TableRow key={order.orderId}>
+                    <TableCell>{order.orderId}</TableCell>
+                    <TableCell>{order.medName}</TableCell>
+                    <TableCell>{order.quantity}</TableCell>
+                    <TableCell>{order.manufacturerName || "N/A"}</TableCell>
+                    <TableCell>{order.manufacturerEmail || "N/A"}</TableCell>
+                    <TableCell>{formatDateTime(order.orderDate)}</TableCell>
+                    <TableCell>
+                      {formatDateTime(order.orderApprovedDate)}
+                    </TableCell>
+                    <TableCell>{order.status}</TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
       </ScrollArea>
     </Card>
   );

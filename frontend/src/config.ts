@@ -16,7 +16,7 @@ import PharmaChain from "../artifacts/contracts/PharmaChain.sol/PharmaChain.json
 import { createPublicClient, http } from 'viem'
 import { arbitrumSepolia as arbitrumSepoliaviem } from "viem/chains";
 
-export const ContractAddress = "0x1cCCB9f10F1fFaBD69E5438FEf0a0775Ea42cf15";
+export const ContractAddress = "0x43dF3118fd9c1680963568038180520D2Efc3506";
 export const ContractAbi = PharmaChain.abi;
 
 export const publicClient = createPublicClient({
@@ -38,6 +38,9 @@ export const config = createConfig({
   chain,
   ssr: true,
   storage: cookieStorage,
+  sessionConfig: {
+    expirationTimeMs: 1000 * 60 * 60 * 24 * 180, // 180 days
+  },
 });
 // [!endregion create-accounts-config]
 

@@ -461,6 +461,37 @@ contract PharmaChain {
         return pendingOrders;
     }
 
+    // Function to get fulfilled distributor orders
+    function getFulfilledDistributorOrders(
+        address _distributor
+    ) external view returns (DistributorOrder[] memory) {
+        uint256 count = 0;
+        for (uint256 i = 100; i < nextDistributorOrderId; i++) {
+            if (
+                distributorOrders[i].distributor == _distributor &&
+                distributorOrders[i].status == OrderStatus.Reached
+            ) {
+                count++;
+            }
+        }
+
+        DistributorOrder[] memory fulfilledOrders = new DistributorOrder[](
+            count
+        );
+        uint256 index = 0;
+        for (uint256 i = 100; i < nextDistributorOrderId; i++) {
+            if (
+                distributorOrders[i].distributor == _distributor &&
+                distributorOrders[i].status == OrderStatus.Reached
+            ) {
+                fulfilledOrders[index] = distributorOrders[i];
+                index++;
+            }
+        }
+
+        return fulfilledOrders;
+    }
+
     function getDistributorOrder(
         uint256 _orderId
     ) external view returns (DistributorOrder memory) {
@@ -489,6 +520,24 @@ contract PharmaChain {
         }
 
         return orders;
+    }
+
+    // STOCK FUNCTION
+    function getDistributorStock(
+        address _distributor
+    ) external view returns (StockItem[] memory) {
+        uint256 count = distributorMedNames[_distributor].length;
+        StockItem[] memory stocks = new StockItem[](count);
+
+        for (uint256 i = 0; i < count; i++) {
+            string memory medName = distributorMedNames[_distributor][i];
+            stocks[i] = StockItem({
+                medName: medName,
+                quantity: distributorStocks[_distributor][medName]
+            });
+        }
+
+        return stocks;
     }
 
     // PROVIDER FUNCTIONS
@@ -573,23 +622,36 @@ contract PharmaChain {
         return pendingOrders;
     }
 
-    // STOCK FUNCTIONS
-    function getDistributorStock(
-        address _distributor
-    ) external view returns (StockItem[] memory) {
-        uint256 count = distributorMedNames[_distributor].length;
-        StockItem[] memory stocks = new StockItem[](count);
-
-        for (uint256 i = 0; i < count; i++) {
-            string memory medName = distributorMedNames[_distributor][i];
-            stocks[i] = StockItem({
-                medName: medName,
-                quantity: distributorStocks[_distributor][medName]
-            });
+    //  Get fulfilled provider orders
+    function getFulfilledProviderOrders(
+        address _provider
+    ) external view returns (ProviderOrder[] memory) {
+        uint256 count = 0;
+        for (uint256 i = 100; i < nextProviderOrderId; i++) {
+            if (
+                providerOrders[i].provider == _provider &&
+                providerOrders[i].status == OrderStatus.Reached
+            ) {
+                count++;
+            }
         }
 
-        return stocks;
+        ProviderOrder[] memory fulfilledOrders = new ProviderOrder[](count);
+        uint256 index = 0;
+        for (uint256 i = 100; i < nextProviderOrderId; i++) {
+            if (
+                providerOrders[i].provider == _provider &&
+                providerOrders[i].status == OrderStatus.Reached
+            ) {
+                fulfilledOrders[index] = providerOrders[i];
+                index++;
+            }
+        }
+
+        return fulfilledOrders;
     }
+
+    // STOCK FUNCTIONS
 
     function getProviderStock(
         address _provider
