@@ -7,12 +7,12 @@ import FulfilledDistributorsOrdersTable from "../distributor/FullfiledDistributo
 import ProviderOrdersTable from "../distributor/ProviderOrdersTable";
 import StockTable from "../distributor/StockTable";
 import { DistributorRFID } from "../distributor/DistributorRFID";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { PChart } from "@/components/charts/PChart"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PChart } from "@/components/charts/PChart";
 
 const DistributorDashboard = () => {
   return (
-    <main className="p-4 grid grid-cols-4 gap-4 flex-grow">
+    <main className="grid flex-grow grid-cols-4 gap-4 p-4">
       <div className="col-span-1 flex flex-col gap-4">
         <div className="">
           <OrderBatchForm />
@@ -23,7 +23,7 @@ const DistributorDashboard = () => {
         <PChart chartTitle="Orders" chartDescription="" />
       </div>
       <div className="col-span-3">
-        <Tabs defaultValue="currentorders" className="h-full flex flex-col">
+        <Tabs defaultValue="currentorders" className="flex h-full flex-col">
           <TabsList className="w-fit">
             <TabsTrigger value="currentorders">Current Orders</TabsTrigger>
             <TabsTrigger value="fulfilledorders">Fulfilled Orders</TabsTrigger>
