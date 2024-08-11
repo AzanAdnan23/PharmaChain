@@ -385,15 +385,11 @@ contract PharmaChain {
     function updateDistributorOrderStatusByRFID(
         bytes32 _rfidUIDHash,
         OrderStatus _status
-    ) external onlyDistributor {
+    ) external onlyDistributor onlyManufacturer {
         uint256 orderId = rfidToDistributorOrderId[_rfidUIDHash];
         require(orderId != 0, "Order not found for the given RFID UID");
 
         DistributorOrder storage order = distributorOrders[orderId];
-        require(
-            order.distributor == msg.sender,
-            "Only the distributor can update the order status"
-        );
 
         order.status = _status;
 
@@ -535,10 +531,13 @@ contract PharmaChain {
 
     function getDistributorOrderByRFID(
         bytes32 _rfidUIDHash
-    ) external view returns (DistributorOrder memory) {
+    ) external view returns (uint256) {
         uint256 orderId = rfidToDistributorOrderId[_rfidUIDHash];
-        require(orderId != 0, "Order not found for the given RFID UID");
-        return distributorOrders[orderId];
+        if (orderId == 0) {
+            return 0; // Return 0 if the orderId is not found
+        } else {
+            return distributorOrders[orderId].orderId; // Return the actual orderId
+        }
     }
 
     // STOCK FUNCTION
@@ -583,7 +582,7 @@ contract PharmaChain {
     function updateProviderOrderStatusByRFID(
         bytes32 _rfidUIDHash,
         OrderStatus _status
-    ) external onlyProvider {
+    ) external onlyProvider onlyDistributor {
         uint256 orderId = rfidToProviderOrderId[_rfidUIDHash];
         require(orderId != 0, "Order not found for the given RFID UID");
 
@@ -696,23 +695,15 @@ contract PharmaChain {
         return fulfilledOrders;
     }
 
-    function getProviderOrderIdByRFID(
-        bytes32 _rfidUIDHash
-    ) public view returns (uint256) {
-        for (uint256 i = 100; i < nextBatchId; i++) {
-            if (batches[i].rfidUIDHash == _rfidUIDHash) {
-                return batches[i].orderId;
-            }
-        }
-        return 0;
-    }
-
     function getProviderOrderByRFID(
         bytes32 _rfidUIDHash
-    ) external view returns (ProviderOrder memory) {
+    ) external view returns (uint256) {
         uint256 orderId = rfidToProviderOrderId[_rfidUIDHash];
-        require(orderId != 0, "Order not found for the given RFID UID");
-        return providerOrders[orderId];
+        if (orderId == 0) {
+            return 0;
+        } else {
+            return providerOrders[orderId].orderId;
+        }
     }
 
     // STOCK FUNCTIONS

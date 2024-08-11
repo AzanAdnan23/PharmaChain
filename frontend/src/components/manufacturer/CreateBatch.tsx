@@ -138,7 +138,7 @@ export default function CreateBatchForm() {
             <Button
               variant="outline"
               type="button"
-              onClick={scanRfidDummy}
+              onClick={scanRfid}
               className="mb-2 self-end"
             >
               {loadingRFID ? <LoadingSpinner /> : "Scan RFID"}
