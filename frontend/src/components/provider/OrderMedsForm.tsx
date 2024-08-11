@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useEffect } from "react";
 import { encodeFunctionData } from "viem";
 import {
   useAccount,
@@ -28,10 +29,18 @@ export default function OrderMedsForm() {
     opts,
   });
 
-  const { sendUserOperation } = useSendUserOperation({
-    client,
-    waitForTxn: true,
-  });
+  const {
+    sendUserOperation,
+    sendUserOperationResult,
+    isSendingUserOperation,
+    error: isSendUserOperationError,
+  } = useSendUserOperation({ client, waitForTxn: true });
+
+  useEffect(() => {
+    if (!isSendingUserOperation && sendUserOperationResult) {
+      window.location.reload();
+    }
+  }, [isSendingUserOperation]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

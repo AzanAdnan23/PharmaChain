@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 enum OrderStatus {
   Pending = "Pending",
@@ -126,7 +127,12 @@ export default function OrderDetailsTable() {
                   <TableCell>{order.orderId}</TableCell>
                   <TableCell>{order.medName}</TableCell>
                   <TableCell>{order.quantity}</TableCell>
-                  <TableCell>{order.status}</TableCell>
+                  <TableCell>
+                    //render different badge colors for different statuses
+                    <Badge color={order.status === OrderStatus.Pending ? "red" : "green"}>
+                      {order.status}
+                    </Badge>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
