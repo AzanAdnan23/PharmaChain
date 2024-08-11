@@ -65,46 +65,46 @@ export default function StockTable() {
   return (
     <Card className="h-full">
       <ScrollArea className="h-full w-full">
-      <CardHeader>
-        <CardTitle>Stock</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <LoadingSpinner /> // Show a loading spinner while fetching data
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Medicine Name</TableHead>
-                <TableHead>Quantity</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-            {isLoading ? (
+        <CardHeader>
+          <CardTitle>Stock</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <LoadingSpinner /> // Show a loading spinner while fetching data
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">
-                    Loading...
-                  </TableCell>
+                  <TableHead>Medicine Name</TableHead>
+                  <TableHead>Quantity</TableHead>
                 </TableRow>
-              ) :
-                stockItems.length === 0 ? (
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-gray-500">
-                      Nothing in stock.
+                    <TableCell colSpan={5} className="text-center">
+                      Loading...
                     </TableCell>
                   </TableRow>
-                ) : (
-                stockItems.map((item) => (
-                  <TableRow key={item.medName}>
-                    <TableCell>{item.medName}</TableCell>
-                    <TableCell>{item.quantity}</TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
+                ) :
+                  stockItems.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-gray-500">
+                        Nothing in stock.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    stockItems.map((item) => (
+                      <TableRow key={item.medName}>
+                        <TableCell>{item.medName}</TableCell>
+                        <TableCell>{item.quantity}</TableCell>
+                      </TableRow>
+                    ))
+                  )}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
       </ScrollArea>
     </Card>
   );

@@ -90,7 +90,7 @@ export default function OrderMedsForm() {
             min="1"
             required
           />
-          <Button type="submit" className="mt-4" disabled={isLoading}>
+          <Button type="submit" className="w-full mt-4" disabled={isLoading}>
             {isLoading ? "Ordering..." : "Order"}
           </Button>
         </form>

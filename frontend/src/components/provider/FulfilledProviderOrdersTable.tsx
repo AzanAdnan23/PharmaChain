@@ -19,6 +19,8 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ProvidersOrder {
   medName: string;
@@ -121,51 +123,53 @@ export default function FulfilledProviderOrdersTable() {
   }, [address]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Fulfilled Provider Orders</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Order ID</TableHead>
-              <TableHead>Medicine Name</TableHead>
-              <TableHead>Quantity</TableHead>
-              <TableHead>Distributor Name</TableHead>
-              <TableHead>Distributor Email</TableHead>
-              <TableHead>Order Date</TableHead>
-              <TableHead>Order Approve Date</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {fulfilledOrders.map(
-              ({
-                orderId,
-                medName,
-                quantity,
-                distributorName,
-                distributorEmail,
-                orderDate,
-                orderApprovedDate,
-                status,
-              }) => (
-                <TableRow key={orderId}>
-                  <TableCell>{orderId}</TableCell>
-                  <TableCell>{medName}</TableCell>
-                  <TableCell>{quantity}</TableCell>
-                  <TableCell>{distributorName}</TableCell>
-                  <TableCell>{distributorEmail}</TableCell>
-                  <TableCell>{orderDate}</TableCell>
-                  <TableCell>{orderApprovedDate}</TableCell>
-                  <TableCell>{status}</TableCell>
-                </TableRow>
-              ),
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
+    <Card className="h-full">
+      <ScrollArea className="w-full h-full">
+        <CardHeader>
+          <CardTitle>Fulfilled Provider Orders</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Order ID</TableHead>
+                <TableHead>Medicine Name</TableHead>
+                <TableHead>Quantity</TableHead>
+                <TableHead>Distributor Name</TableHead>
+                <TableHead>Distributor Email</TableHead>
+                <TableHead>Order Date</TableHead>
+                <TableHead>Order Approve Date</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {fulfilledOrders.map(
+                ({
+                  orderId,
+                  medName,
+                  quantity,
+                  distributorName,
+                  distributorEmail,
+                  orderDate,
+                  orderApprovedDate,
+                  status,
+                }) => (
+                  <TableRow key={orderId}>
+                    <TableCell>{orderId}</TableCell>
+                    <TableCell>{medName}</TableCell>
+                    <TableCell>{quantity}</TableCell>
+                    <TableCell>{distributorName}</TableCell>
+                    <TableCell>{distributorEmail}</TableCell>
+                    <TableCell>{orderDate}</TableCell>
+                    <TableCell>{orderApprovedDate}</TableCell>
+                    <TableCell>{status}</TableCell>
+                  </TableRow>
+                ),
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </ScrollArea>
     </Card>
   );
 }

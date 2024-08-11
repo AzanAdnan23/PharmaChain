@@ -17,6 +17,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 enum OrderStatus {
   Pending = "Pending",
@@ -101,7 +102,8 @@ export default function OrderDetailsTable() {
   }, [address]);
 
   return (
-    <Card>
+    <Card className="h-full">
+      <ScrollArea className="w-full h-full">
       <CardHeader>
         <CardTitle>Order Details</CardTitle>
       </CardHeader>
@@ -131,6 +133,7 @@ export default function OrderDetailsTable() {
           </Table>
         )}
       </CardContent>
+      </ScrollArea>
     </Card>
   );
 }
