@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-
+// check in update status to dont add stock 2 times
 contract PharmaChain {
     enum Role {
         Manufacturer,
@@ -281,6 +281,7 @@ contract PharmaChain {
         batch.orderId = _orderId;
         order.batchId = _batchId;
 
+        order.isAssigned = true;
         order.manufacturer = msg.sender;
         order.status = OrderStatus.Approved;
         order.orderApprovedDate = block.timestamp;
@@ -395,45 +396,34 @@ contract PharmaChain {
 }
 
 
-    function assignBatchToProvider(
-        uint256 _batchId,
-        address _provider
-    ) external onlyDistributor {
-        require(users[_provider].role == Role.Provider, "Invalid provider");
+   function assignBatchToProvider(
+    uint256 _batchId,
+    address _provider,
+    uint256 _orderId
+) external onlyDistributor {
+    require(
+        users[_provider].role == Role.Provider,
+        "Invalid provider"
+    );
 
-        Batch storage batch = batches[_batchId];
-        require(
-            batch.distributor == msg.sender,
-            "Only the assigned distributor can assign this batch"
-        );
-        require(batch.isQualityApproved, "Batch must be quality approved");
-        require(!batch.isRecalled, "Batch has been recalled");
+    Batch storage batch = batches[_batchId];
+    require(batch.isQualityApproved, "Batch must be quality approved");
+    require(batch.distributor == msg.sender, "Only the distributor who received the batch can assign it to a provider");
 
-        ProviderOrder memory order = ProviderOrder({
-            medName: batch.details,
-            quantity: batch.quantity,
-            orderId: nextProviderOrderId++,
-            batchId: _batchId,
-            provider: _provider,
-            distributor: msg.sender,
-            isAssigned: true,
-            orderDate: block.timestamp,
-            orderApprovedDate: block.timestamp,
-            status: OrderStatus.Approved
-        });
+    ProviderOrder storage order = providerOrders[_orderId];
+    require(order.batchId == 0, "Order is already assigned to a batch");
+   
+    order.batchId = _batchId;
+    order.isAssigned = true;
+    order.distributor = msg.sender;
+    order.status = OrderStatus.Approved;
+    order.orderApprovedDate = block.timestamp;
 
-        providerOrders[order.orderId] = order;
+    rfidToProviderOrderId[batch.rfidUIDHash] = _orderId;
 
-        // Map RFID UID to provider order ID
-        rfidToProviderOrderId[batch.rfidUIDHash] = order.orderId;
+    emit BatchAssignedToProvider(_batchId, _provider);
+}
 
-        providerStocks[_provider][batch.details] += batch.quantity;
-        if (!_medNameExistsInList(_provider, batch.details, false)) {
-            providerMedNames[_provider].push(batch.details);
-        }
-
-        emit BatchAssignedToProvider(_batchId, _provider);
-    }
 
     function getPendingDistributorOrders()
         external
@@ -577,16 +567,12 @@ contract PharmaChain {
 
          require(
         users[msg.sender].role == Role.Provider || users[msg.sender].role == Role.Distributor,
-        "Only manufacturers or distributors can perform this action");
-        
+        "Only Provider or distributors can perform this action");
+
         uint256 orderId = rfidToProviderOrderId[_rfidUIDHash];
         require(orderId != 0, "Order not found for the given RFID UID");
 
         ProviderOrder storage order = providerOrders[orderId];
-        require(
-            order.provider == msg.sender,
-            "Only the provider can update the order status"
-        );
 
         order.status = _status;
 
@@ -631,36 +617,33 @@ contract PharmaChain {
         return orders;
     }
 
-    function getPendingProviderOrders()
-        external
-        view
-        onlyProvider
-        returns (ProviderOrder[] memory)
-    {
-        uint256 count = 0;
-        for (uint256 i = 100; i < nextProviderOrderId; i++) {
-            if (
-                providerOrders[i].provider == msg.sender &&
-                providerOrders[i].status == OrderStatus.Pending
-            ) {
-                count++;
-            }
+function getPendingProviderOrders()
+    external
+    view
+    returns (ProviderOrder[] memory)
+{
+    uint256 count = 0;
+    for (uint256 i = 100; i < nextProviderOrderId; i++) {
+        if (providerOrders[i].status == OrderStatus.Pending
+        ) {
+            count++;
         }
-
-        ProviderOrder[] memory pendingOrders = new ProviderOrder[](count);
-        uint256 index = 0;
-        for (uint256 i = 100; i < nextProviderOrderId; i++) {
-            if (
-                providerOrders[i].provider == msg.sender &&
-                providerOrders[i].status == OrderStatus.Pending
-            ) {
-                pendingOrders[index] = providerOrders[i];
-                index++;
-            }
-        }
-
-        return pendingOrders;
     }
+
+    ProviderOrder[] memory pendingOrders = new ProviderOrder[](count);
+    uint256 index = 0;
+    for (uint256 i = 100; i < nextProviderOrderId; i++) {
+        if (providerOrders[i].status == OrderStatus.Pending
+        ) {
+            pendingOrders[index] = providerOrders[i];
+            index++;
+        }
+    }
+
+    return pendingOrders;
+}
+
+
 
     //  Get fulfilled provider orders
     function getFulfilledProviderOrders(

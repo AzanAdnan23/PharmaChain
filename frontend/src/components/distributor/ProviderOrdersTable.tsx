@@ -35,9 +35,9 @@ interface ProviderOrder {
   orderDate: number;
   batchId: number;
   medName: string;
-  quantity: number;
+  quantity: bigint; // Changed to bigint
   isAssigned: boolean;
-  status: OrderStatus;
+  status: number; // Use number for status to match the API output
 }
 
 interface Order extends ProviderOrder { } // For consistency
@@ -51,7 +51,7 @@ export default function ProviderOrdersTable() {
 
   const fetchOrderedBatches = async () => {
     if (!address) return;
-
+    
     const PharmaChain = getContract({
       address: ContractAddress,
       abi: ContractAbi,
@@ -73,6 +73,23 @@ export default function ProviderOrdersTable() {
   useEffect(() => {
     fetchOrderedBatches();
   }, [address]);
+
+  const getStatusString = (status: number): string => {
+    switch (status) {
+      case 0:
+        return OrderStatus.Pending;
+      case 1:
+        return OrderStatus.InTransit;
+      case 2:
+        return OrderStatus.Approved;
+      case 3:
+        return OrderStatus.Reached;
+      case 4:
+        return OrderStatus.Recalled;
+      default:
+        return "Unknown";
+    }
+  };
 
   const handleAssign = () => {
     if (selectedOrder) {
@@ -105,30 +122,30 @@ export default function ProviderOrdersTable() {
                     Loading...
                   </TableCell>
                 </TableRow>
-              ) :
-                orders.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-gray-500">
-                      No orders from provider.
+              ) : orders.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-gray-500">
+                    No orders from provider.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                orders.map((order) => (
+                  <TableRow
+                    key={order.orderId}
+                    onClick={() => setSelectedOrder(order)}
+                  >
+                    <TableCell>{order.orderId.toString()}</TableCell>
+                    <TableCell>{order.medName}</TableCell>
+                    <TableCell>{order.quantity.toString()}</TableCell> 
+                    <TableCell>{getStatusString(order.status)}</TableCell>
+                    <TableCell>
+                      <Button onClick={() => handleAssign()}>
+                        Assign to Provider
+                      </Button>
                     </TableCell>
                   </TableRow>
-                ) : (
-                  orders.map((order) => (
-                    <TableRow
-                      key={order.orderId}
-                      onClick={() => setSelectedOrder(order)}
-                    >
-                      <TableCell>{order.orderId}</TableCell>
-                      <TableCell>{order.medName}</TableCell>
-                      <TableCell>{order.quantity}</TableCell>
-                      <TableCell>{order.status}</TableCell>
-                      <TableCell>
-                        <Button onClick={() => handleAssign()}>
-                          Assign to Provider
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  )))}
+                ))
+              )}
             </TableBody>
           </Table>
           {selectedOrder && (
