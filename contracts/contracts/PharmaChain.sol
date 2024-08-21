@@ -387,7 +387,7 @@ contract PharmaChain {
         distributorStocks[msg.sender][order.medName] += order.quantity;
 
         // Add medName to distributor's medName list if not already present
-        if (!_medNameExistsInList(msg.sender, order.medName, true)) {
+        if (!_distributorMedNameExists(msg.sender, order.medName)) {
             distributorMedNames[msg.sender].push(order.medName);
         }
     }
@@ -581,7 +581,7 @@ contract PharmaChain {
             providerStocks[msg.sender][order.medName] += order.quantity;
 
             // Add medName to provider's medName list if not already present
-            if (!_medNameExistsInList(msg.sender, order.medName, false)) {
+            if (!_providerMedNameExists(msg.sender, order.medName)) {
                 providerMedNames[msg.sender].push(order.medName);
             }
         }
@@ -704,20 +704,34 @@ function getPendingProviderOrders()
         return stocks;
     }
 
-    // Internal Helper Function
-    function _medNameExistsInList(
-        address _user,
-        string memory _medName,
-        bool isDistributor
-    ) internal view returns (bool) {
-        string[] storage medNames = isDistributor
-            ? distributorMedNames[_user]
-            : providerMedNames[_user];
-        for (uint256 i = 0; i < medNames.length; i++) {
-            if (keccak256(bytes(medNames[i])) == keccak256(bytes(_medName))) {
-                return true;
-            }
+
+// Internal Helper Function for Distributor
+function _distributorMedNameExists(
+    address _user,
+    string memory _medName
+) internal view returns (bool) {
+    string[] storage medNames = distributorMedNames[_user];
+    for (uint256 i = 0; i < medNames.length; i++) {
+        if (keccak256(bytes(medNames[i])) == keccak256(bytes(_medName))) {
+            return true;
         }
-        return false;
     }
+    return false;
+}
+
+// Internal Helper Function for Provider
+function _providerMedNameExists(
+    address _user,
+    string memory _medName
+) internal view returns (bool) {
+    string[] storage medNames = providerMedNames[_user];
+    for (uint256 i = 0; i < medNames.length; i++) {
+        if (keccak256(bytes(medNames[i])) == keccak256(bytes(_medName))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
 }
