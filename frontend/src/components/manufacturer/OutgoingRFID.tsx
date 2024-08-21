@@ -29,7 +29,12 @@ export default function OutgoingRFID() {
     opts,
   });
 
-  const checkIsOrderIdExist = async (): Promise<boolean> => {
+  const { sendUserOperation, error: isSendUserOperationError } = useSendUserOperation({
+    client,
+    waitForTxn: true,
+  });
+
+  const checkIsOrderIdExist = async (rfidUID: string): Promise<boolean> => {
     const PharmaChain = getContract({
       address: ContractAddress,
       abi: ContractAbi,
@@ -37,12 +42,11 @@ export default function OutgoingRFID() {
     });
 
     try {
-      // Ensure the RFID UID is a valid bytes32 format
-      const formattedRfidUID = `0x${rfidUID?.padStart(64, "0")}`;
-
-      const result = await PharmaChain.read.getProviderOrderByRFID([
-        formattedRfidUID,
+      console.log("Fetching orders with RFID UID:", rfidUID);
+      const result = await PharmaChain.read.getDistributorOrderByRFID([
+        rfidUID,
       ]);
+      console.log("Order ID fetched successfully:", result);
       return result !== 0; // Check if result is not zero
     } catch (error) {
       console.error("Error fetching order ID:", error);
@@ -54,18 +58,14 @@ export default function OutgoingRFID() {
     InTransit: 1,
   };
 
-  const { sendUserOperation } = useSendUserOperation({
-    client,
-    waitForTxn: true,
-  });
-
-  const updateStatus = async () => {
+  const updateStatus = async (rfidUID: string) => {
     const orderStatus = orderStatusEnum.InTransit;
+
     const uoCallData = client
       ? encodeFunctionData({
           abi: ContractAbi,
           functionName: "updateDistributorOrderStatusByRFID",
-          args: [`0x${rfidUID?.padStart(64, "0")}`, orderStatus],
+          args: [rfidUID, orderStatus],
         })
       : null;
 
@@ -76,12 +76,19 @@ export default function OutgoingRFID() {
 
     setIsLoading(true);
     try {
-      await sendUserOperation({
+      const result = await sendUserOperation({
         uo: {
           target: ContractAddress,
           data: uoCallData,
         },
       });
+
+      if (isSendUserOperationError) {
+        console.error("User operation error:", isSendUserOperationError);
+        toast.error("Error updating order");
+        return;
+      }
+
       console.log("Order Updated successfully", address);
       toast.success("Order Updated successfully");
     } catch (error) {
@@ -89,9 +96,7 @@ export default function OutgoingRFID() {
       toast.error("Error updating order");
     } finally {
       setIsLoading(false);
-      setTimeout(() => {
-        window.location.reload();
-      }, 5000);
+      // Optional: Reload page or update UI
     }
   };
 
@@ -99,19 +104,26 @@ export default function OutgoingRFID() {
     setLoadingRFID(true); // Start loading
     try {
       const response = await fetch("/api/scan-rfid");
-      const text = await response.text();
-      setRfidUID(text);
+      const rfidData = await response.text(); // Already in bytes32 format
 
-      const orderExists = await checkIsOrderIdExist();
-      if (orderExists) {
-        await updateStatus();
+      console.log("Scanned RFID Data:", rfidData);
+      setRfidUID(rfidData); // Set the RFID data
+
+      if (rfidData) {
+        const orderExists = await checkIsOrderIdExist(rfidData);
+        if (orderExists) {
+          await updateStatus(rfidData);
+        } else {
+          toast.error("Order ID does not exist. Status not updated.");
+        }
       } else {
-        toast.error("Order ID does not exist. Status not updated.");
+        toast.error("RFID data is empty. Scanning failed.");
       }
 
       toast.success("RFID scanned successfully");
     } catch (error) {
       console.error("Error scanning RFID:", error);
+      toast.error("Error scanning RFID");
     } finally {
       setLoadingRFID(false); // End loading
     }

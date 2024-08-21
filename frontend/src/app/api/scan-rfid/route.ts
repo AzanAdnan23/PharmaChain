@@ -1,7 +1,7 @@
 import { SerialPort } from 'serialport';
 
 export async function GET() {
-  const portName = 'COM7'; // Update this as needed
+  const portName = 'COM5'; // Update this as needed
   const baudRate = 115200;
   
   const port = new SerialPort({
@@ -26,13 +26,18 @@ export async function GET() {
           console.log('No card scanned');
         } else {
           validIdFound = true;
-          const last32Bytes = responseHex.slice(-32); // Extract the last 32 hex characters
-          console.log('Card ID:', last32Bytes);
+          let last32Bytes = responseHex.slice(-32); // Extract the last 32 hex characters
+          
+          // Ensure the last32Bytes is exactly 32 bytes long by padding with zeros if needed
+          last32Bytes = last32Bytes.padStart(64, '0');
+          const bytes32Data0x = '0x' + last32Bytes;
+          
+          console.log('Card ID (bytes32):', bytes32Data0x);
           port.close((closeErr) => {
             if (closeErr) {
               console.error('Error closing port: ', closeErr.message);
             }
-            resolve(new Response(last32Bytes));
+            resolve(new Response(bytes32Data0x));
           });
         }
       };

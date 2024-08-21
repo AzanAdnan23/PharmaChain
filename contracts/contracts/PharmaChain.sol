@@ -88,22 +88,7 @@ contract PharmaChain {
     uint256 public nextDistributorOrderId = 100;
     uint256 public nextProviderOrderId = 100;
 
-    event UserRegistered(
-        address indexed user,
-        string companyName,
-        Role role,
-        string contactInfo
-    );
-    event BatchCreated(
-        uint256 indexed batchId,
-        address indexed manufacturer,
-        string details,
-        bytes32 rfidUIDHash,
-        uint256 manufactureDate,
-        uint256 expiryDate,
-        uint256 quantity
-    );
-    event QualityApproved(uint256 indexed batchId, address indexed approver);
+
     event QualityDisapproved(
         uint256 indexed batchId,
         address indexed disapprover
@@ -116,6 +101,10 @@ contract PharmaChain {
     event BatchAssignedToProvider(
         uint256 indexed batchId,
         address indexed provider
+    );
+     event UpdateDistributorOrderStatus(
+        uint256 indexed orderId,
+        OrderStatus status
     );
 
     modifier onlyManufacturer() {
@@ -158,7 +147,7 @@ contract PharmaChain {
             contactInfo: _contactInfo
         });
 
-        emit UserRegistered(_user, _companyName, _role, _contactInfo);
+       
     }
 
     function isUserRegistered(address _user) external view returns (bool) {
@@ -226,15 +215,7 @@ contract PharmaChain {
             orderId: 0
         });
 
-        emit BatchCreated(
-            batchId,
-            msg.sender,
-            _details,
-            _rfidUIDHash,
-            block.timestamp,
-            _expiryDate,
-            _quantity
-        );
+      
     }
 
     function approveQuality(uint256 _batchId) external onlyManufacturer {
@@ -247,7 +228,7 @@ contract PharmaChain {
         batch.isQualityApproved = true;
         batch.isQualityDisapproved = false;
 
-        emit QualityApproved(_batchId, msg.sender);
+      
     }
 
     function disapproveQuality(uint256 _batchId) external onlyManufacturer {
@@ -382,27 +363,37 @@ contract PharmaChain {
         });
     }
 
-    function updateDistributorOrderStatusByRFID(
-        bytes32 _rfidUIDHash,
-        OrderStatus _status
-    ) external onlyDistributor onlyManufacturer {
-        uint256 orderId = rfidToDistributorOrderId[_rfidUIDHash];
-        require(orderId != 0, "Order not found for the given RFID UID");
+   function updateDistributorOrderStatusByRFID(
+    bytes32 _rfidUIDHash,
+    OrderStatus _status
+) external {
 
-        DistributorOrder storage order = distributorOrders[orderId];
+    // Ensure the caller is either a manufacturer or distributor
+    require(
+        users[msg.sender].role == Role.Manufacturer || users[msg.sender].role == Role.Distributor,
+        "Only manufacturers or distributors can perform this action"
+    );
 
-        order.status = _status;
+    uint256 orderId = rfidToDistributorOrderId[_rfidUIDHash];
+    require(orderId != 0, "Order not found for the given RFID UID");
 
-        if (_status == OrderStatus.Reached) {
-            // Update distributor's stock when order status changes to Reached
-            distributorStocks[msg.sender][order.medName] += order.quantity;
+    DistributorOrder storage order = distributorOrders[orderId];
 
-            // Add medName to distributor's medName list if not already present
-            if (!_medNameExistsInList(msg.sender, order.medName, true)) {
-                distributorMedNames[msg.sender].push(order.medName);
-            }
+    order.status = _status;
+
+    if (_status == OrderStatus.Reached) {
+        // Update distributor's stock when order status changes to Reached
+        distributorStocks[msg.sender][order.medName] += order.quantity;
+
+        // Add medName to distributor's medName list if not already present
+        if (!_medNameExistsInList(msg.sender, order.medName, true)) {
+            distributorMedNames[msg.sender].push(order.medName);
         }
     }
+
+    emit UpdateDistributorOrderStatus(orderId, _status);
+}
+
 
     function assignBatchToProvider(
         uint256 _batchId,
@@ -582,7 +573,12 @@ contract PharmaChain {
     function updateProviderOrderStatusByRFID(
         bytes32 _rfidUIDHash,
         OrderStatus _status
-    ) external onlyProvider onlyDistributor {
+    ) external  {
+
+         require(
+        users[msg.sender].role == Role.Provider || users[msg.sender].role == Role.Distributor,
+        "Only manufacturers or distributors can perform this action");
+        
         uint256 orderId = rfidToProviderOrderId[_rfidUIDHash];
         require(orderId != 0, "Order not found for the given RFID UID");
 
