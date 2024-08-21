@@ -2,7 +2,7 @@
 
 import OrderMedsForm from "../provider/OrderMedsForm";
 import OrderDetailsTable from "../provider/OrderDetailsTable";
-import StockTable from "../distributor/StockTable";
+import StockTable from "../provider/StockTable";
 import FulfilledProviderOrdersTable from "../provider/FulfilledProviderOrdersTable";
 import IncomingRFIDButton from "../provider/IncomingRFIDButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";

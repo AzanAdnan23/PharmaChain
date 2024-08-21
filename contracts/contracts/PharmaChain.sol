@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-// check in update status to dont add stock 2 times
 contract PharmaChain {
     enum Role {
         Manufacturer,
@@ -369,7 +368,7 @@ contract PharmaChain {
     OrderStatus _status
 ) external {
 
-    // Ensure the caller is either a manufacturer or distributor
+   
     require(
         users[msg.sender].role == Role.Manufacturer || users[msg.sender].role == Role.Distributor,
         "Only manufacturers or distributors can perform this action"
@@ -380,6 +379,7 @@ contract PharmaChain {
 
     DistributorOrder storage order = distributorOrders[orderId];
 
+    require(order.status != OrderStatus.Reached, "Order has already reached");
     order.status = _status;
 
     if (_status == OrderStatus.Reached) {
@@ -559,33 +559,38 @@ contract PharmaChain {
             orderApprovedDate: 0
         });
     }
-
-    function updateProviderOrderStatusByRFID(
-        bytes32 _rfidUIDHash,
-        OrderStatus _status
-    ) external  {
-
-         require(
+function updateProviderOrderStatusByRFID(
+    bytes32 _rfidUIDHash,
+    OrderStatus _status
+) external {
+    require(
         users[msg.sender].role == Role.Provider || users[msg.sender].role == Role.Distributor,
-        "Only Provider or distributors can perform this action");
+        "Only Providers or Distributors can perform this action"
+    );
 
-        uint256 orderId = rfidToProviderOrderId[_rfidUIDHash];
-        require(orderId != 0, "Order not found for the given RFID UID");
+    uint256 orderId = rfidToProviderOrderId[_rfidUIDHash];
+    require(orderId != 0, "Order not found for the given RFID UID");
 
-        ProviderOrder storage order = providerOrders[orderId];
+    ProviderOrder storage order = providerOrders[orderId];
+    require(order.status != OrderStatus.Reached, "Order has already reached");
 
-        order.status = _status;
+    order.status = _status;
 
-        if (_status == OrderStatus.Reached) {
-            // Update provider's stock when order status changes to Reached
-            providerStocks[msg.sender][order.medName] += order.quantity;
+    if (_status == OrderStatus.Reached) {
+        // Update provider's stock
+        providerStocks[order.provider][order.medName] += order.quantity;
 
-            // Add medName to provider's medName list if not already present
-            if (!_providerMedNameExists(msg.sender, order.medName)) {
-                providerMedNames[msg.sender].push(order.medName);
-            }
+        // Add medName to provider's medName list if not already present
+        if (!_providerMedNameExists(order.provider, order.medName)) {
+            providerMedNames[order.provider].push(order.medName);
         }
+
+        // Deduct quantity from distributor's stock
+        distributorStocks[order.distributor][order.medName] -= order.quantity;
     }
+}
+
+
 
     function getProviderOrderDetails(
         uint256 _orderId

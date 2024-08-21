@@ -28,6 +28,7 @@ interface StockItem {
 export default function StockTable() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [stockItems, setStockItems] = useState<StockItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const { address } = useAccount({ type: accountType });
 
@@ -41,6 +42,8 @@ export default function StockTable() {
     });
 
     setIsLoading(true);
+    setError(null); // Reset error state
+
     try {
       const result = await PharmaChain.read.getProviderStock([address]);
       console.log("Getting Providers Stock", result);
@@ -53,6 +56,7 @@ export default function StockTable() {
       setStockItems(formattedStock);
     } catch (error) {
       console.error("Error fetching stock items:", error);
+      setError("Failed to load stock items.");
     } finally {
       setIsLoading(false);
     }
@@ -70,7 +74,9 @@ export default function StockTable() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <LoadingSpinner /> // Show a loading spinner while fetching data
+            <LoadingSpinner /> 
+          ) : error ? (
+            <div className="text-red-500 text-center">{error}</div>
           ) : (
             <Table>
               <TableHeader>
@@ -80,27 +86,20 @@ export default function StockTable() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading ? (
+                {stockItems.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center">
-                      Loading...
+                    <TableCell colSpan={5} className="text-center text-gray-500">
+                      Nothing in stock.
                     </TableCell>
                   </TableRow>
-                ) :
-                  stockItems.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center text-gray-500">
-                        Nothing in stock.
-                      </TableCell>
+                ) : (
+                  stockItems.map((item) => (
+                    <TableRow key={item.medName}>
+                      <TableCell>{item.medName}</TableCell>
+                      <TableCell>{item.quantity}</TableCell>
                     </TableRow>
-                  ) : (
-                    stockItems.map((item) => (
-                      <TableRow key={item.medName}>
-                        <TableCell>{item.medName}</TableCell>
-                        <TableCell>{item.quantity}</TableCell>
-                      </TableRow>
-                    ))
-                  )}
+                  ))
+                )}
               </TableBody>
             </Table>
           )}
