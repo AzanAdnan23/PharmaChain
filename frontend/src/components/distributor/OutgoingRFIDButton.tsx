@@ -1,5 +1,5 @@
-import { FormEvent, useState, useEffect } from "react";
-import { encodeFunctionData } from "viem";
+import { useState } from "react";
+import { encodeFunctionData, getContract } from "viem";
 import {
   useAccount,
   useSendUserOperation,
@@ -11,15 +11,16 @@ import {
   accountClientOptions as opts,
   ContractAddress,
   ContractAbi,
+  publicClient,
 } from "@/config";
+
 import { Button } from "@/components/ui/button";
-import { LoadingSpinner } from "../ui/loading-spinner";
 import { toast, Toaster } from "sonner";
 
-export default function OutgoingRFIDButton() {
+export default function OutgoingRFID() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingRFID, setLoadingRFID] = useState<boolean>(false);
-  const [rfidUID, setRfidUID] = useState("");
+  const [rfidUID, setRfidUID] = useState<string | null>(null);
 
   const { address } = useAccount({ type: accountType });
   const { client } = useSmartAccountClient({
@@ -27,39 +28,67 @@ export default function OutgoingRFIDButton() {
     gasManagerConfig,
     opts,
   });
+
+  const { sendUserOperation, error: isSendUserOperationError } = useSendUserOperation({
+    client,
+    waitForTxn: true,
+  });
+
+  const checkIsOrderIdExist = async (rfidUID: string): Promise<boolean> => {
+    const PharmaChain = getContract({
+      address: ContractAddress,
+      abi: ContractAbi,
+      client: publicClient,
+    });
+
+    try {
+      console.log("Fetching orders with RFID UID:", rfidUID);
+      const result = await PharmaChain.read.getProviderOrderByRFID([
+        rfidUID,
+      ]);
+      console.log("Order ID fetched successfully:", result);
+      return result !== 0; // Check if result is not zero
+    } catch (error) {
+      console.error("Error fetching order ID:", error);
+      return false;
+    }
+  };
+
   const orderStatusEnum = {
     InTransit: 1,
   };
 
-  const {
-    sendUserOperation,
-    sendUserOperationResult,
-    isSendingUserOperation,
-    error: isSendUserOperationError,
-  } = useSendUserOperation({ client, waitForTxn: true });
+  const updateStatus = async (rfidUID: string) => {
+    const orderStatus = orderStatusEnum.InTransit;
 
-  const orderstatus = orderStatusEnum.InTransit; // Use the numeric value corresponding to the enum
-
-  const updateStatus = async () => {
     const uoCallData = client
       ? encodeFunctionData({
           abi: ContractAbi,
           functionName: "updateProviderOrderStatusByRFID",
-          args: [rfidUID, orderstatus],
+          args: [rfidUID, orderStatus],
         })
       : null;
+
     if (!client || !uoCallData) {
       console.error("Client not initialized or uoCallData is null");
       return;
     }
+
     setIsLoading(true);
     try {
-      await sendUserOperation({
+      const result = await sendUserOperation({
         uo: {
           target: ContractAddress,
           data: uoCallData,
         },
       });
+
+      if (isSendUserOperationError) {
+        console.error("User operation error:", isSendUserOperationError);
+        toast.error("Error updating order");
+        return;
+      }
+
       console.log("Order Updated successfully", address);
       toast.success("Order Updated successfully");
     } catch (error) {
@@ -67,10 +96,7 @@ export default function OutgoingRFIDButton() {
       toast.error("Error updating order");
     } finally {
       setIsLoading(false);
-      // Refresh page after 5 seconds
-      setTimeout(() => {
-        window.location.reload();
-      }, 5000);
+      // Optional: Reload page or update UI
     }
   };
 
@@ -78,12 +104,23 @@ export default function OutgoingRFIDButton() {
     setLoadingRFID(true); // Start loading
     try {
       const response = await fetch("/api/scan-rfid");
-      const text = await response.text();
-      setRfidUID(text);
-      console.log("RFID UID:", text);
+      const rfidData = await response.text(); // Already in bytes32 format
+
+      console.log("Scanned RFID Data:", rfidData);
+      setRfidUID(rfidData); // Set the RFID data
+
+      if (rfidData) {
+        const orderExists = await checkIsOrderIdExist(rfidData);
+        if (orderExists) {
+          await updateStatus(rfidData);
+        } else {
+          toast.error("Order ID does not exist. Status not updated.");
+        }
+      } else {
+        toast.error("RFID data is empty. Scanning failed.");
+      }
+
       toast.success("RFID scanned successfully");
-      // Trigger status update after scanning
-      await updateStatus();
     } catch (error) {
       console.error("Error scanning RFID:", error);
       toast.error("Error scanning RFID");
@@ -92,24 +129,15 @@ export default function OutgoingRFIDButton() {
     }
   };
 
-  const scanRfidDummy = async () => {
-    const arbitraryRfidUID =
-      "0x00000000000000000000000000000000000000000000000000000000000004d2";
-    setRfidUID(arbitraryRfidUID);
-    await updateStatus();
-  };
-
   return (
-    <div>
-      <Button
-        onClick={scanRfid}
-        className="mt-4"
-        disabled={loadingRFID || isLoading}
-      >
-        {loadingRFID ? <LoadingSpinner /> : "Scan Outgoing RFID"}
+    <>
+      <Button onClick={scanRfid} className="mt-4">
+        Scan Outgoing RFID
       </Button>
-      <div className="py-6 text-gray-600">Outgoing RFID: {rfidUID}</div>
+
+      <div className="p-4 text-gray-500">Outgoing RFID: {rfidUID}</div>
+
       <Toaster />
-    </div>
+    </>
   );
 }
