@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
-import { getContract } from "viem";
-import { useAccount } from "@alchemy/aa-alchemy/react";
+import { getContract, encodeFunctionData } from "viem";
+import {
+  useAccount,
+  useSendUserOperation,
+  useSmartAccountClient,
+} from "@alchemy/aa-alchemy/react";
 import {
   accountType,
+  gasManagerConfig,
+  accountClientOptions as opts,
   ContractAddress,
   ContractAbi,
   publicClient,
@@ -17,7 +23,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input"; // Ensure Input is correctly imported
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 enum OrderStatus {
@@ -30,17 +36,15 @@ enum OrderStatus {
 
 interface ProviderOrder {
   orderId: number;
-  distributor: string;
   provider: string;
   orderDate: number;
-  batchId: number;
   medName: string;
-  quantity: bigint; // Changed to bigint
+  quantity: number;
   isAssigned: boolean;
   status: number; // Use number for status to match the API output
 }
 
-interface Order extends ProviderOrder { } // For consistency
+interface Order extends ProviderOrder {}
 
 export default function ProviderOrdersTable() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -51,7 +55,7 @@ export default function ProviderOrdersTable() {
 
   const fetchOrderedBatches = async () => {
     if (!address) return;
-    
+
     const PharmaChain = getContract({
       address: ContractAddress,
       abi: ContractAbi,
@@ -62,7 +66,7 @@ export default function ProviderOrdersTable() {
     try {
       const result: any = await PharmaChain.read.getPendingProviderOrders();
       console.log("Fetching Provider Orders", result);
-      setOrders(result); // Assuming result is an array of ProviderOrder
+      setOrders(result);
     } catch (error) {
       console.error("Error while fetching orders", error);
     } finally {
@@ -91,11 +95,8 @@ export default function ProviderOrdersTable() {
     }
   };
 
-  const handleAssign = () => {
-    if (selectedOrder) {
-      // Handle assign action
-      console.log("Assigning Order", selectedOrder);
-    }
+  const handleAssign = (order: Order) => {
+    setSelectedOrder(order);
   };
 
   return (
@@ -132,14 +133,14 @@ export default function ProviderOrdersTable() {
                 orders.map((order) => (
                   <TableRow
                     key={order.orderId}
-                    onClick={() => setSelectedOrder(order)}
+                    onClick={() => handleAssign(order)}
                   >
                     <TableCell>{order.orderId.toString()}</TableCell>
                     <TableCell>{order.medName}</TableCell>
-                    <TableCell>{order.quantity.toString()}</TableCell> 
+                    <TableCell>{order.quantity.toString()}</TableCell>
                     <TableCell>{getStatusString(order.status)}</TableCell>
                     <TableCell>
-                      <Button onClick={() => handleAssign()}>
+                      <Button onClick={() => handleAssign(order)}>
                         Assign to Provider
                       </Button>
                     </TableCell>
@@ -166,13 +167,55 @@ interface AssignToProviderFormProps {
 }
 
 function AssignToProviderForm({ order, onClose }: AssignToProviderFormProps) {
-  const [medicineUnits, setMedicineUnits] = useState<number>(0);
-  const [providerAddress, setProviderAddress] = useState<string>("");
+  const [batchID, setBatchID] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const { client } = useSmartAccountClient({
+    type: accountType,
+    gasManagerConfig,
+    opts,
+  });
+
+  const {
+    sendUserOperation,
+    isSendingUserOperation,
+    error: isSendUserOperationError,
+    sendUserOperationResult,
+  } = useSendUserOperation({ client, waitForTxn: true });
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Handle form submission
-    console.log({ medicineUnits, providerAddress });
+
+    if (!batchID.trim()) {
+      console.error("Batch ID cannot be empty.");
+      return;
+    }
+
+    const uoCallData = encodeFunctionData({
+      abi: ContractAbi,
+      functionName: "assignBatchToProvider",
+      args: [batchID, order.provider, order.orderId],
+    });
+
+    if (!client || !uoCallData) {
+      console.error("Client not initialized or uoCallData is null");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await sendUserOperation({
+        uo: {
+          target: ContractAddress,
+          data: uoCallData,
+        },
+      });
+    } catch (error) {
+      console.error("Error assigning batch to provider:", error);
+    } finally {
+      setIsLoading(false);
+      onClose();
+    }
   };
 
   return (
@@ -184,29 +227,18 @@ function AssignToProviderForm({ order, onClose }: AssignToProviderFormProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Medicine Units
-            </label>
-            <Input
-              type="number"
-              placeholder="Medicine Units"
-              value={medicineUnits}
-              onChange={(e) => setMedicineUnits(Number(e.target.value))}
-              className="mb-2"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Provider Address
+              Batch ID
             </label>
             <Input
               type="text"
-              placeholder="Provider Address"
-              value={providerAddress}
-              onChange={(e) => setProviderAddress(e.target.value)}
+              placeholder="Enter Batch ID"
+              value={batchID}
+              onChange={(e) => setBatchID(e.target.value)}
+              className="mb-2"
             />
           </div>
-          <Button type="submit" className="mt-4">
-            Assign
+          <Button type="submit" className="mt-4" disabled={isLoading}>
+            {isLoading ? "Assigning..." : "Assign"}
           </Button>
           <Button type="button" onClick={onClose} className="ml-2">
             Cancel
