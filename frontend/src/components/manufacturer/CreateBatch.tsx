@@ -49,11 +49,11 @@ export default function CreateBatchForm() {
     error: isSendUserOperationError,
   } = useSendUserOperation({ client, waitForTxn: true });
 
-  useEffect(() => {
-    if (!isSendingUserOperation && sendUserOperationResult) {
-      window.location.reload();
-    }
-  }, [isSendingUserOperation]);
+  // useEffect(() => {
+  //   if (!isSendingUserOperation && sendUserOperationResult) {
+  //     window.location.reload();
+  //   }
+  // }, [isSendingUserOperation]);
 
   const createNewBatch = async (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
@@ -116,9 +116,9 @@ export default function CreateBatchForm() {
       toast.error("An error occurred");
     } finally {
       setIsLoading(false);
-      setTimeout(() => {
-        window.location.reload();
-      }, 5000);
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 5000);
     }
   };
   
@@ -139,7 +139,7 @@ export default function CreateBatchForm() {
 
   const scanRfidDummy = async () => {
     const arbitraryRfidUID =
-      "valididhere";
+      "0x05416460deb76d57af601be17e777b93592d8d4d4a4096c57876a91c84f4a712";
     setRfidUID(arbitraryRfidUID);
   };
 
