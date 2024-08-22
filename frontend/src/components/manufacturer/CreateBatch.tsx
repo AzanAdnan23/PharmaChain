@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState, useEffect } from "react";
+import { QRCodeCanvas } from "qrcode.react";
 import { encodeFunctionData } from "viem";
 import {
   useAccount,
@@ -28,6 +29,7 @@ export default function CreateBatchForm() {
   const [expiryDate, setExpiryDate] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingRFID, setLoadingRFID] = useState<boolean>(false);
+  const [qrCode, setQrCode] = useState<string | null>(null);
 
   const { address } = useAccount({ type: accountType });
   const { client } = useSmartAccountClient({
@@ -35,6 +37,10 @@ export default function CreateBatchForm() {
     gasManagerConfig,
     opts,
   });
+
+  const generateQrCode = (batchId: string) => {
+    setQrCode(batchId);
+  };
 
   const {
     sendUserOperation,
@@ -51,41 +57,71 @@ export default function CreateBatchForm() {
 
   const createNewBatch = async (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
-
-    // Convert expiry date to timestamp
-    const expiryTimestamp = Math.floor(new Date(expiryDate).getTime() / 1000);
-
-    const uoCallData = client
-      ? encodeFunctionData({
-          abi: ContractAbi,
-          functionName: "createBatch",
-          args: [medicineName, rfidUID, expiryTimestamp, quantity],
-        })
-      : null;
-    if (!client || !uoCallData) {
-      console.error("Client not initialized or uoCallData is null");
-      return;
-    }
     setIsLoading(true);
+  
     try {
+      // Convert expiry date to timestamp
+      const expiryTimestamp = Math.floor(new Date(expiryDate).getTime() / 1000);
+  
+      // Encode function data for blockchain call
+      const uoCallData = client
+        ? encodeFunctionData({
+            abi: ContractAbi,
+            functionName: "createBatch",
+            args: [medicineName, rfidUID, expiryTimestamp, quantity],
+          })
+        : null;
+  
+      if (!client || !uoCallData) {
+        console.error("Client not initialized or uoCallData is null");
+        setIsLoading(false);
+        return;
+      }
+  
+      // Send the transaction to the blockchain
       await sendUserOperation({
         uo: {
           target: ContractAddress,
           data: uoCallData,
         },
       });
-      console.log("Batch created successfully by this address", address);
-      toast.success("Batch created successfully");
+  
+      console.log("Batch created on blockchain by address:", address);
+      toast.success("Batch created on blockchain successfully");
+  
+      // After successful blockchain transaction, save the batch to the database
+      const response = await fetch("/api/batches", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          rfidUID,
+          medicineName,
+          quantity,
+          expiryDate,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (data.success) {
+        console.log("Batch saved to database with batchId:", data.batchId);
+        generateQrCode(data.batchId);
+      } else {
+        toast.error("Failed to save batch to database");
+      }
     } catch (error) {
       console.error("Error creating batch:", error);
+      toast.error("An error occurred");
     } finally {
       setIsLoading(false);
-      //refresh page after 5 seconds
       setTimeout(() => {
         window.location.reload();
       }, 5000);
     }
   };
+  
 
   const scanRfid = async () => {
     setLoadingRFID(true); // Start loading
@@ -103,7 +139,7 @@ export default function CreateBatchForm() {
 
   const scanRfidDummy = async () => {
     const arbitraryRfidUID =
-      "0x00000000000000000000000000000000000000000000000000000000000004d2";
+      "valididhere";
     setRfidUID(arbitraryRfidUID);
   };
 
@@ -138,7 +174,7 @@ export default function CreateBatchForm() {
             <Button
               variant="outline"
               type="button"
-              onClick={scanRfid}
+              onClick={scanRfidDummy}
               className="mb-2 self-end"
             >
               {loadingRFID ? <LoadingSpinner /> : "Scan RFID"}
@@ -166,6 +202,12 @@ export default function CreateBatchForm() {
             {isLoading ? <LoadingSpinner /> : "Create Batch"}
           </Button>
         </form>
+        {qrCode && (
+          <div className="mt-4">
+            <h3>QR Code for Batch ID:</h3>
+            <QRCodeCanvas value={qrCode} size={256} />
+          </div>
+        )}
       </CardContent>
       <Toaster />
     </Card>
