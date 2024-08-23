@@ -10,10 +10,6 @@ const MedicineSchema = new mongoose.Schema({
         type: String, 
         required: true 
     },
-    manufacturer: {
-        type: String,
-        required: true
-    },
     events: {
         batchCreated: {
             type: Boolean,
@@ -23,7 +19,15 @@ const MedicineSchema = new mongoose.Schema({
             type: Boolean,
             default: false
         },
+        batchDisapproved: {
+            type: Boolean,
+            default: false
+        },
         batchRecalled: {
+            type: Boolean,
+            default: false
+        },
+        manufacturerOutgoingRFID: {
             type: Boolean,
             default: false
         },
@@ -49,7 +53,15 @@ const MedicineSchema = new mongoose.Schema({
             type: Date,
             default: null
         },
+        batchDisapprovedAt: {
+            type: Date,
+            default: null
+        },
         batchRecalledAt: {
+            type: Date,
+            default: null
+        },
+        manufacturerOutgoingRFIDAt: {
             type: Date,
             default: null
         },

@@ -190,7 +190,7 @@ export default function OrdersFulfilledTable() {
     fetchFullfiledOrders();
   }, [address]);
 
-  const handleRecall = async (batchId: number) => {
+  const handleRecall = async (batchId: number, rfidUIDHash: any) => {
     setIsRecallLoading(true);
     try {
       if (!client) {
@@ -211,9 +211,28 @@ export default function OrdersFulfilledTable() {
         },
       });
 
-      console.log("Batch recalled successfully");
-      toast.success("Batch recalled successfully");
-      fetchFullfiledOrders(); // Refresh the orders list after recall
+      // Update the batch in MongoDB
+      const response = await fetch(`/api/batches`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          rfidUID: rfidUIDHash,
+          updateData: {
+            "events.batchRecalled": true,
+            "timestamps.batchRecalledAt": new Date(),
+          },
+        }),
+      });
+  
+      const data = await response.json();
+      if (data.success) {
+        toast.success("Batch recalled and updated in database successfully");
+        await fetchFullfiledOrders(); // Refetch data after operation
+      } else {
+        toast.error("Failed to update batch in database");
+      }
     } catch (error) {
       console.error("Error recalling batch:", error);
     } finally {
@@ -300,7 +319,7 @@ export default function OrdersFulfilledTable() {
                         ) : (
                           <Button
                             variant="outline"
-                            onClick={() => handleRecall(order.batchId)}
+                            onClick={() => handleRecall(order.batchId, order.rfidUIDHash)}
                             disabled={isRecallLoading}
                           >
                             {isRecallLoading ? "Recalling..." : "Recall"}

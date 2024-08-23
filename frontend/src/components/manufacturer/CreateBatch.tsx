@@ -39,7 +39,11 @@ export default function CreateBatchForm() {
   });
 
   const generateQrCode = (batchId: string) => {
-    setQrCode(batchId);
+    // Construct the full URL for the user dashboard
+    const userDashboardUrl = `${window.location.origin}/consumerview/${batchId}`;
+    
+    // Set the QR code value to this URL
+    setQrCode(userDashboardUrl);
   };
 
   const {
@@ -79,7 +83,7 @@ export default function CreateBatchForm() {
       }
   
       // Send the transaction to the blockchain
-      await sendUserOperation({
+      sendUserOperation({
         uo: {
           target: ContractAddress,
           data: uoCallData,
@@ -139,9 +143,13 @@ export default function CreateBatchForm() {
 
   const scanRfidDummy = async () => {
     const arbitraryRfidUID =
-      "0x05416460deb76d57af601be17e777b93592d8d4d4a4096c57876a91c84f4a712";
+      "0x05416460deb76d57af601be17e777b93592d8d4d4a4096c57876a91c84f4a711";
     setRfidUID(arbitraryRfidUID);
   };
+
+  const reloadWindow = () => {
+    window.location.reload();
+  }
 
   return (
     <Card className="h-full w-full">
@@ -204,8 +212,9 @@ export default function CreateBatchForm() {
         </form>
         {qrCode && (
           <div className="mt-4">
-            <h3>QR Code for Batch ID:</h3>
+            <h3>QR Code for User Dashboard:</h3>
             <QRCodeCanvas value={qrCode} size={256} />
+            <Button className="mt-4 w-full" onClick={reloadWindow}>Dismiss</Button>
           </div>
         )}
       </CardContent>

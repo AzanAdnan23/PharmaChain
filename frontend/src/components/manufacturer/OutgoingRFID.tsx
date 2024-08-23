@@ -43,9 +43,7 @@ export default function OutgoingRFID() {
 
     try {
       console.log("Fetching orders with RFID UID:", rfidUID);
-      const result = await PharmaChain.read.getDistributorOrderByRFID([
-        rfidUID,
-      ]);
+      const result = await PharmaChain.read.getDistributorOrderByRFID([rfidUID]);
       console.log("Order ID fetched successfully:", result);
       return result !== 0; // Check if result is not zero
     } catch (error) {
@@ -91,12 +89,35 @@ export default function OutgoingRFID() {
 
       console.log("Order Updated successfully", address);
       toast.success("Order Updated successfully");
+
+      // Now, update the status in MongoDB
+      const updateResponse = await fetch(`/api/batches`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          rfidUID: rfidUID,
+          updateData: {
+            "events.manufacturerOutgoingRFID": true,
+            "timestamps.manufacturerOutgoingRFIDAt": new Date(),
+          },
+        }),
+      });
+
+      const updateData = await updateResponse.json();
+      if (updateData.success) {
+        console.log("Batch status updated in database for RFID:", rfidUID);
+        toast.success("Batch status updated in database");
+      } else {
+        toast.error("Failed to update batch status in database");
+      }
+
     } catch (error) {
       console.error("Error updating order:", error);
       toast.error("Error updating order");
     } finally {
       setIsLoading(false);
-      // Optional: Reload page or update UI
     }
   };
 
@@ -129,9 +150,35 @@ export default function OutgoingRFID() {
     }
   };
 
+  const scanRfidDummy = async () => {
+    setLoadingRFID(true); // Start loading
+    try {
+      const rfidData = "0x05416460deb76d57af601be17e777b93592d8d4d4a4096c57876a91c84f4a711";
+      setRfidUID(rfidData); // Set the RFID data
+
+      if (rfidData) {
+        const orderExists = await checkIsOrderIdExist(rfidData);
+        if (orderExists) {
+          await updateStatus(rfidData);
+        } else {
+          toast.error("Order ID does not exist. Status not updated.");
+        }
+      } else {
+        toast.error("RFID data is empty. Scanning failed.");
+      }
+
+      toast.success("RFID scanned successfully");
+    } catch (error) {
+      console.error("Error scanning RFID:", error);
+      toast.error("Error scanning RFID");
+    } finally {
+      setLoadingRFID(false); // End loading
+    }
+  };
+
   return (
     <>
-      <Button onClick={scanRfid} className="mt-4">
+      <Button onClick={scanRfidDummy} className="mt-4">
         Scan Outgoing RFID
       </Button>
 

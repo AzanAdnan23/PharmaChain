@@ -109,20 +109,21 @@ export default function CreatedBatchesTable() {
     }
   }, [isSendingUserOperation]);
 
-  const handleAccept = async (batchID: number) => {
+  const handleAccept = async (batchID: number, rfidUIDHash: any) => {
     const uoCallData = encodeFunctionData({
       abi: ContractAbi,
       functionName: "approveQuality",
       args: [batchID],
     });
-
+  
     if (!client || !uoCallData) {
       console.error("Client not initialized or uoCallData is null");
       return;
     }
-
+  
     setIsLoading(true);
     try {
+      // Send the operation to approve quality on the blockchain
       await sendUserOperation({
         uo: {
           target: ContractAddress,
@@ -130,29 +131,55 @@ export default function CreatedBatchesTable() {
         },
       });
       console.log("Batch Quality Approved by this address", address);
-      await fetchCreatedBatches(); // Refetch data after operation
-      toast.success('Batch quality approved successfully');
+  
+      // Update the batch in MongoDB
+      const response = await fetch(`/api/batches`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          rfidUID: rfidUIDHash,
+          updateData: {
+            "events.batchApproved": true,
+            "events.batchDisapproved": false,
+            "timestamps.batchApprovedAt": new Date(),
+          },
+        }),
+      });
+  
+      const data = await response.json();
+      if (data.success) {
+        toast.success("Batch quality approved and updated in database successfully");
+        await fetchCreatedBatches(); // Refetch data after operation
+      } else {
+        toast.error("Failed to update batch in database");
+      }
     } catch (error) {
       console.error("Error approving quality of batch:", error);
+      toast.error("An error occurred during the approval process");
     } finally {
       setIsLoading(false);
     }
   };
+  
+  
 
-  const handleReject = async (batchID: number) => {
+  const handleReject = async (batchID: number, rfidUIDHash: any) => {
     const uoCallData = encodeFunctionData({
       abi: ContractAbi,
       functionName: "disapproveQuality",
       args: [batchID],
     });
-
+  
     if (!client || !uoCallData) {
       console.error("Client not initialized or uoCallData is null");
       return;
     }
-
+  
     setIsLoading(true);
     try {
+      // Send the operation to disapprove quality on the blockchain
       await sendUserOperation({
         uo: {
           target: ContractAddress,
@@ -160,14 +187,39 @@ export default function CreatedBatchesTable() {
         },
       });
       console.log("Batch Quality Disapproved by this address", address);
-      await fetchCreatedBatches(); // Refetch data after operation
-      toast.success('Batch quality disapproved successfully');
+  
+      // Update the batch in MongoDB
+      const response = await fetch(`/api/batches`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          rfidUID: rfidUIDHash,
+          updateData: {
+            "events.batchApproved": false,
+            "events.batchDisapproved": true,
+            "timestamps.batchDisapprovedAt": new Date(),
+          },
+        }),
+      });
+  
+      const data = await response.json();
+      if (data.success) {
+        toast.success("Batch quality disapproved and updated in database successfully");
+        await fetchCreatedBatches(); // Refetch data after operation
+      } else {
+        toast.error("Failed to update batch in database");
+      }
     } catch (error) {
       console.error("Error disapproving quality of batch:", error);
+      toast.error("An error occurred during the disapproval process");
     } finally {
       setIsLoading(false);
     }
   };
+  
+  
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp * 1000);
@@ -233,14 +285,14 @@ export default function CreatedBatchesTable() {
                         <>
                           <Button
                             variant="outline"
-                            onClick={() => handleAccept(batch.batchId)}
+                            onClick={() => handleAccept(batch.batchId, batch.rfidUIDHash)}
                             disabled={isSendingUserOperation}
                           >
                             Approve
                           </Button>
                           <Button
                             variant="outline"
-                            onClick={() => handleReject(batch.batchId)}
+                            onClick={() => handleReject(batch.batchId, batch.rfidUIDHash)}
                             className="ml-2"
                             disabled={isSendingUserOperation}
                           >
