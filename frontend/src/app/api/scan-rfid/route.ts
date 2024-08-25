@@ -1,6 +1,6 @@
 import { SerialPort } from 'serialport';
 
-export async function GET() {
+export async function GET(): Promise<Response> {
   const portName = 'COM5'; // Update this as needed
   const baudRate = 115200;
   
@@ -12,7 +12,7 @@ export async function GET() {
 
   const hexCommand = Buffer.from('53570006FF0100000050', 'hex');
   
-  return new Promise((resolve) => {
+  return new Promise<Response>((resolve) => {  // Explicitly set the type of the promise
     port.open((err) => {
       if (err) {
         return resolve(new Response('Error opening port: ' + err.message, { status: 500 }));
