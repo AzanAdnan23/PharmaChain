@@ -16,6 +16,34 @@ import {
     DrawerTrigger,
 } from "@/components/ui/drawer";
 
+type MedicineData = {
+    medicineName: string;
+    expiryDate: string;
+    batchId: string;
+    timestamps: {
+      batchCreatedAt: Date | null;
+      batchApprovedAt: Date | null;
+      batchDisapprovedAt: Date | null;
+      batchRecalledAt: Date | null;
+      manufacturerOutgoingRFIDAt: Date | null;
+      distributorIncomingRFIDAt: Date | null;
+      distributorOutgoingRFIDAt: Date | null;
+      providerIncomingRFIDAt: Date | null;
+      qrScannedAt: Date | null;
+    };
+    events: {
+      batchCreated: boolean;
+      batchApproved: boolean;
+      batchDisapproved: boolean;
+      batchRecalled: boolean;
+      manufacturerOutgoingRFID: boolean;
+      distributorIncomingRFID: boolean;
+      distributorOutgoingRFID: boolean;
+      providerIncomingRFID: boolean;
+      qrScanned: boolean;
+    };
+  };
+
 const ConsumerView = () => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [medicineData, setMedicineData] = useState<MedicineData | null>(null);
@@ -98,7 +126,7 @@ const ConsumerView = () => {
         return `${batchId.slice(0, 5)}...${batchId.slice(-5)}`;
     };
 
-    const steps: Step[] = [
+    const steps: any = [
         { location: "Batch Created", date: formatDate(medicineData.timestamps.batchCreatedAt), status: medicineData.events.batchCreated ? "completed" : "" },
         { location: "Batch Approved", date: formatDate(medicineData.timestamps.batchApprovedAt), status: medicineData.events.batchApproved ? "completed" : "" },
         { location: "Batch Disapproved", date: formatDate(medicineData.timestamps.batchDisapprovedAt), status: medicineData.events.batchDisapproved ? "completed" : "" },
