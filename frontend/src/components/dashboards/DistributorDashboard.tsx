@@ -9,7 +9,7 @@ import StockTable from "../distributor/StockTable";
 // import FulfilledProviderOrdersTable from "../provider/FulfilledProviderOrdersTable";
 import { DistributorRFID } from "../distributor/DistributorRFID";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LChart } from "@/components/charts/LChart";
+import { DistributorChart } from "@/components/charts/DistributorChart";
 
 const DistributorDashboard = (props: any) => {
   return (
@@ -18,7 +18,7 @@ const DistributorDashboard = (props: any) => {
         <div className="">
           <OrderBatchForm />
         </div>
-        <LChart chartTitle="Orders" chartDescription="" />
+        <DistributorChart />
         <div className="">
           <DistributorRFID tempRFID={props.tempRFID} />
         </div>

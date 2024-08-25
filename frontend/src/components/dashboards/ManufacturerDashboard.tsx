@@ -6,9 +6,8 @@ import CreatedBatchesTable from "../manufacturer/CreatedBatches";
 import CurrentOrdersTable from "../manufacturer/CurrentOrders";
 import OrdersFulfilledTable from "../manufacturer/OrdersFulfilled";
 import OutgoingRFID from "../manufacturer/OutgoingRFID";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LChart } from "@/components/charts/LChart"
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ManufacturerChart } from "@/components/charts/ManufacturerChart";
 
 const ManufacturerDashboard = (props: any) => {
   return (
@@ -17,7 +16,7 @@ const ManufacturerDashboard = (props: any) => {
         <div className="">
           <CreateBatchForm tempRFID={props.tempRFID} />
         </div>
-        <LChart chartTitle="Popular Orders" chartDescription="" />
+        <ManufacturerChart />
         <OutgoingRFID tempRFID={props.tempRFID} />
       </div>
       <div className="col-span-3">

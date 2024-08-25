@@ -6,14 +6,14 @@ import StockTable from "../provider/StockTable";
 import FulfilledProviderOrdersTable from "../provider/FulfilledProviderOrdersTable";
 import IncomingRFIDButton from "../provider/IncomingRFIDButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { LChart } from "../charts/LChart";
+import { ProviderChart } from "../charts/ProviderChart";
 
 const ProviderDashboard = (props: any) => {
   return (
     <main className="p-4 grid grid-cols-4 gap-4 flex-grow">
       <div className="col-span-1 flex flex-col gap-4">
       <OrderMedsForm />
-      <LChart chartTitle="Amount of Orders" chartDescription="" />
+      <ProviderChart />
       <IncomingRFIDButton tempRFID={props.tempRFID} />
       </div>
       <div className="col-span-3">

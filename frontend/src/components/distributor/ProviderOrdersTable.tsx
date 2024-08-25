@@ -157,6 +157,7 @@ export default function ProviderOrdersTable() {
                     </TableCell>
                     <TableCell>
                       <Button
+                      variant="outline"
                         onClick={() => handleAssignClick(order)}
                       >
                         Assign to Provider
