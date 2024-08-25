@@ -7,18 +7,18 @@ import CurrentOrdersTable from "../manufacturer/CurrentOrders";
 import OrdersFulfilledTable from "../manufacturer/OrdersFulfilled";
 import OutgoingRFID from "../manufacturer/OutgoingRFID";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { BChart } from "@/components/charts/BChart"
+import { LChart } from "@/components/charts/LChart"
 
 
-const ManufacturerDashboard = () => {
+const ManufacturerDashboard = (props: any) => {
   return (
     <main className="p-4 grid grid-cols-4 gap-4 flex-grow">
       <div className="col-span-1 flex flex-col gap-4">
         <div className="">
-          <CreateBatchForm />
+          <CreateBatchForm tempRFID={props.tempRFID} />
         </div>
-        <BChart chartTitle="Popular Orders" chartDescription="" />
-        <OutgoingRFID />
+        <LChart chartTitle="Popular Orders" chartDescription="" />
+        <OutgoingRFID tempRFID={props.tempRFID} />
       </div>
       <div className="col-span-3">
         <Tabs defaultValue="createdbatches" className="h-full flex flex-col">

@@ -162,7 +162,11 @@ export default function FulfilledProviderOrdersTable() {
                     <TableCell>{distributorEmail}</TableCell>
                     <TableCell>{orderDate}</TableCell>
                     <TableCell>{orderApprovedDate}</TableCell>
-                    <TableCell>{status}</TableCell>
+                    <TableCell>
+                    <Badge className="text-secondary dark:text-primary rounded-sm bg-green-700">
+                      {status}
+                    </Badge>
+                    </TableCell>
                   </TableRow>
                 ),
               )}

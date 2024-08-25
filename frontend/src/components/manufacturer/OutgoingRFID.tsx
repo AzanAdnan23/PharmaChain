@@ -16,8 +16,9 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-export default function OutgoingRFID() {
+export default function OutgoingRFID(props: any) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingRFID, setLoadingRFID] = useState<boolean>(false);
   const [rfidUID, setRfidUID] = useState<string | null>(null);
@@ -153,7 +154,7 @@ export default function OutgoingRFID() {
   const scanRfidDummy = async () => {
     setLoadingRFID(true); // Start loading
     try {
-      const rfidData = "0x05416460deb76d57af601be17e777b93592d8d4d4a4096c57876a91c84f4a711";
+      const rfidData = props.tempRFID;
       setRfidUID(rfidData); // Set the RFID data
 
       if (rfidData) {
@@ -177,14 +178,17 @@ export default function OutgoingRFID() {
   };
 
   return (
-    <>
-      <Button onClick={scanRfidDummy} className="mt-4">
-        Scan Outgoing RFID
-      </Button>
-
-      <div className="p-4 text-gray-500">Outgoing RFID: {rfidUID}</div>
-
-      <Toaster />
-    </>
+    <Card className="w-full h-full">
+      <CardHeader>
+        <CardTitle>RFID Scanning</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Button onClick={scanRfidDummy} className="w-full">
+          Scan Outgoing RFID
+        </Button>
+        <div className="w-full p-4 text-gray-500 text-wrap break-all">Outgoing RFID: {rfidUID}</div>
+        <Toaster />
+      </CardContent>
+    </Card>
   );
 }

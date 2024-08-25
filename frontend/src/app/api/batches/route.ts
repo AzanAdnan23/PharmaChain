@@ -14,12 +14,13 @@ mongoose.connect(process.env.MONGODB_URI!, {})
 // POST: Create a new Medicine object
 export async function POST(request: Request) {
   try {
-    const { rfidUID, medicineName, quantity } = await request.json();
+    const { rfidUID, medicineName, expiryDate } = await request.json();
 
     // Create a new batch in the database
     const newBatch = new Medicine({
       batchId: rfidUID,
       medicineName,
+      expiryDate: expiryDate,
       events: { batchCreated: true },
       timestamps: { batchCreatedAt: new Date() },
     });

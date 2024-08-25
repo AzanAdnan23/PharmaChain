@@ -25,6 +25,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"; // Import Dialog components
+import { Badge } from "@/components/ui/badge";
+import { Toaster, toast } from "sonner";
 
 enum OrderStatus {
   Pending = "Pending",
@@ -50,6 +60,7 @@ export default function ProviderOrdersTable() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [orders, setOrders] = useState<ProviderOrder[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false); // State for managing the dialog
 
   const { address } = useAccount({ type: accountType });
 
@@ -95,8 +106,9 @@ export default function ProviderOrdersTable() {
     }
   };
 
-  const handleAssign = (order: Order) => {
+  const handleAssignClick = (order: Order) => {
     setSelectedOrder(order);
+    setDialogOpen(true); // Open the dialog when the "Assign to Provider" button is clicked
   };
 
   return (
@@ -131,16 +143,22 @@ export default function ProviderOrdersTable() {
                 </TableRow>
               ) : (
                 orders.map((order) => (
-                  <TableRow
-                    key={order.orderId}
-                    onClick={() => handleAssign(order)}
-                  >
+                  <TableRow key={order.orderId}>
                     <TableCell>{order.orderId.toString()}</TableCell>
                     <TableCell>{order.medName}</TableCell>
                     <TableCell>{order.quantity.toString()}</TableCell>
-                    <TableCell>{getStatusString(order.status)}</TableCell>
                     <TableCell>
-                      <Button onClick={() => handleAssign(order)}>
+                      <Badge className={getStatusString(order.status) == "Pending"
+                        ? "text-secondary dark:text-primary rounded-sm bg-yellow-700"
+                        : "text-secondary dark:text-primary rounded-sm bg-green-700"
+                      }>
+                        {getStatusString(order.status)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        onClick={() => handleAssignClick(order)}
+                      >
                         Assign to Provider
                       </Button>
                     </TableCell>
@@ -149,14 +167,25 @@ export default function ProviderOrdersTable() {
               )}
             </TableBody>
           </Table>
-          {selectedOrder && (
-            <AssignToProviderForm
-              order={selectedOrder}
-              onClose={() => setSelectedOrder(null)}
-            />
-          )}
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Assign Order</DialogTitle>
+              </DialogHeader>
+              {selectedOrder && (
+                <AssignToProviderForm
+                  order={selectedOrder}
+                  onClose={() => {
+                    setSelectedOrder(null);
+                    setDialogOpen(false);
+                  }}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
         </CardContent>
       </ScrollArea>
+      <Toaster />
     </Card>
   );
 }
@@ -210,6 +239,8 @@ function AssignToProviderForm({ order, onClose }: AssignToProviderFormProps) {
           data: uoCallData,
         },
       });
+      toast.success("Batch assigned to provider successfully.");
+
     } catch (error) {
       console.error("Error assigning batch to provider:", error);
     } finally {
@@ -219,32 +250,21 @@ function AssignToProviderForm({ order, onClose }: AssignToProviderFormProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Assign Order</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Batch ID
-            </label>
-            <Input
-              type="text"
-              placeholder="Enter Batch ID"
-              value={batchID}
-              onChange={(e) => setBatchID(e.target.value)}
-              className="mb-2"
-            />
-          </div>
-          <Button type="submit" className="mt-4" disabled={isLoading}>
-            {isLoading ? "Assigning..." : "Assign"}
-          </Button>
-          <Button type="button" onClick={onClose} className="ml-2">
-            Cancel
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+    <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          type="text"
+          placeholder="Enter Batch ID"
+          value={batchID}
+          onChange={(e) => setBatchID(e.target.value)}
+          className="mb-2 bg-secondary"
+          required
+        />
+        <Button type="submit" disabled={isLoading} className="mt-4">
+          {isLoading ? "Assigning..." : "Assign"}
+        </Button>
+        <Button variant="destructive" type="button" onClick={onClose} className="ml-2">
+          Cancel
+        </Button>
+    </form>
   );
 }

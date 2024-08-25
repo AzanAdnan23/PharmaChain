@@ -10,6 +10,10 @@ const MedicineSchema = new mongoose.Schema({
         type: String, 
         required: true 
     },
+    expiryDate: { 
+        type: Date, 
+        required: true 
+    },
     events: {
         batchCreated: {
             type: Boolean,
@@ -40,6 +44,10 @@ const MedicineSchema = new mongoose.Schema({
             default: false
         },
         providerIncomingRFID: {
+            type: Boolean,
+            default: false
+        },
+        qrScanned: {
             type: Boolean,
             default: false
         }
@@ -74,6 +82,10 @@ const MedicineSchema = new mongoose.Schema({
             default: null
         },
         providerIncomingRFIDAt: {
+            type: Date,
+            default: null
+        },
+        qrScannedAt: {
             type: Date,
             default: null
         }

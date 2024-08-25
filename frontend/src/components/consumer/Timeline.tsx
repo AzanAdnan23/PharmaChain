@@ -26,7 +26,7 @@ const Timeline: React.FC<TimelineProps> = ({ steps }) => {
           <div
             className={`absolute left-[-29px] w-4 h-4 rounded-full ${
               step.status === "completed"
-                ? "bg-green-500"
+                ? "bg-blue-500"
                 : step.status === "current"
                 ? "bg-blue-500"
                 : "bg-gray-400"

@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "../ui/loading-spinner";
 import { toast, Toaster } from "sonner";
 
-export default function CreateBatchForm() {
+export default function CreateBatchForm(props: any) {
   const [rfidUID, setRfidUID] = useState("");
   const [quantity, setQuantity] = useState(0);
   const [medicineName, setMedicineName] = useState("");
@@ -102,7 +102,6 @@ export default function CreateBatchForm() {
         body: JSON.stringify({
           rfidUID,
           medicineName,
-          quantity,
           expiryDate,
         }),
       });
@@ -142,8 +141,7 @@ export default function CreateBatchForm() {
   };
 
   const scanRfidDummy = async () => {
-    const arbitraryRfidUID =
-      "0x05416460deb76d57af601be17e777b93592d8d4d4a4096c57876a91c84f4a711";
+    const arbitraryRfidUID = props.tempRFID;
     setRfidUID(arbitraryRfidUID);
   };
 

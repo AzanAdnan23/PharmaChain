@@ -21,18 +21,21 @@ const MedicineInfo: React.FC<MedicineInfoProps> = ({
         <CardTitle className="text-4xl">{name}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3 mt-5">
+        <div className="space-y-3">
           <div className="text-sm">
             <span className="font-semibold mr-3">Expiry Date:</span>
             <span className="text-gray-500">{expiryDate}</span>
           </div>
           <div className="text-sm">
             <span className="font-semibold mr-3">Batch ID:</span>
-            <span className="text-gray-500">{batchId}</span>
+            <span className="text-gray-500 text-wrap break-all">{batchId}</span>
           </div>
           <div className="text-sm">
             <span className="font-semibold mr-3">Status:</span>
-            <Badge>
+            <Badge className={scanStatus === "already_scanned"
+              ? "text-secondary dark:text-primary rounded-sm bg-red-700"
+              : "text-secondary dark:text-primary rounded-sm bg-green-700"
+            }>
           {scanStatus === "already_scanned" ? "Already Scanned" : "New Scan"}
         </Badge>
           </div>

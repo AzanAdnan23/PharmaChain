@@ -128,8 +128,9 @@ export default function OrderDetailsTable() {
                   <TableCell>{order.medName}</TableCell>
                   <TableCell>{order.quantity}</TableCell>
                   <TableCell>
-                    //render different badge colors for different statuses
-                    <Badge color={order.status === OrderStatus.Pending ? "red" : "green"}>
+                    <Badge className={order.status === OrderStatus.Pending 
+                      ? "text-secondary dark:text-primary rounded-sm bg-yellow-700" 
+                      : "text-secondary dark:text-primary rounded-sm bg-green-700"}>
                       {order.status}
                     </Badge>
                   </TableCell>

@@ -6,21 +6,22 @@ import CurrentOrderBatches from "../distributor/CurrentOrderBatches";
 import FulfilledDistributorsOrdersTable from "../distributor/FullfiledDistributorsOrders";
 import ProviderOrdersTable from "../distributor/ProviderOrdersTable";
 import StockTable from "../distributor/StockTable";
+// import FulfilledProviderOrdersTable from "../provider/FulfilledProviderOrdersTable";
 import { DistributorRFID } from "../distributor/DistributorRFID";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PChart } from "@/components/charts/PChart";
+import { LChart } from "@/components/charts/LChart";
 
-const DistributorDashboard = () => {
+const DistributorDashboard = (props: any) => {
   return (
     <main className="grid flex-grow grid-cols-4 gap-4 p-4">
       <div className="col-span-1 flex flex-col gap-4">
         <div className="">
           <OrderBatchForm />
         </div>
+        <LChart chartTitle="Orders" chartDescription="" />
         <div className="">
-          <DistributorRFID />
+          <DistributorRFID tempRFID={props.tempRFID} />
         </div>
-        <PChart chartTitle="Orders" chartDescription="" />
       </div>
       <div className="col-span-3">
         <Tabs defaultValue="currentorders" className="flex h-full flex-col">
@@ -29,6 +30,7 @@ const DistributorDashboard = () => {
             <TabsTrigger value="fulfilledorders">Fulfilled Orders</TabsTrigger>
             <TabsTrigger value="providerorders">Provider Orders</TabsTrigger>
             <TabsTrigger value="stock">Stock</TabsTrigger>
+            {/* <TabsTrigger value="fulfilledproviderorders">Fulfilled Provider Orders</TabsTrigger> */}
           </TabsList>
           <TabsContent value="fulfilledorders" className="flex-grow">
             <FulfilledDistributorsOrdersTable />
@@ -42,6 +44,9 @@ const DistributorDashboard = () => {
           <TabsContent value="stock" className="flex-grow">
             <StockTable />
           </TabsContent>
+          {/* <TabsContent value="fulfilledproviderorders" className="flex-grow">
+            <FulfilledProviderOrdersTable />
+          </TabsContent> */}
         </Tabs>
       </div>
     </main>

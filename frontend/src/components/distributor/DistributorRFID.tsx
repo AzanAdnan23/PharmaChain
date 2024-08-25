@@ -4,15 +4,15 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import IncomingRFIDButton from "./IncomingRFIDButton";
 import OutgoingRFIDButton from "./OutgoingRFIDButton";
 
-export const DistributorRFID = () => {
+export const DistributorRFID = (props: any) => {
   return (
     <Card className="h-full w-full">
       <CardHeader>
         <CardTitle>RFID Scanning</CardTitle>
       </CardHeader>
       <CardContent>
-        <IncomingRFIDButton />
-        <OutgoingRFIDButton />
+        <IncomingRFIDButton tempRFID={props.tempRFID} />
+        <OutgoingRFIDButton tempRFID={props.tempRFID} />
       </CardContent>
     </Card>
   );

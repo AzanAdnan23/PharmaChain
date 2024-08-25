@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
 
-export default function OutgoingRFID() {
+export default function OutgoingRFID(props: any) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingRFID, setLoadingRFID] = useState<boolean>(false);
   const [rfidUID, setRfidUID] = useState<string | null>(null);
@@ -91,6 +91,30 @@ export default function OutgoingRFID() {
 
       console.log("Order Updated successfully", address);
       toast.success("Order Updated successfully");
+
+      // Now, update the status in MongoDB
+      const updateResponse = await fetch(`/api/batches`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          rfidUID: rfidUID,
+          updateData: {
+            "events.distributorOutgoingRFID": true,
+            "timestamps.distributorOutgoingRFIDAt": new Date(),
+          },
+        }),
+      });
+
+      const updateData = await updateResponse.json();
+      if (updateData.success) {
+        console.log("Batch status updated in database for RFID:", rfidUID);
+        toast.success("Batch status updated in database");
+      } else {
+        toast.error("Failed to update batch status in database");
+      }
+
     } catch (error) {
       console.error("Error updating order:", error);
       toast.error("Error updating order");
@@ -129,9 +153,35 @@ export default function OutgoingRFID() {
     }
   };
 
+  const scanRfidDummy = async () => {
+    setLoadingRFID(true); // Start loading
+    try {
+      const rfidData = props.tempRFID;
+      setRfidUID(rfidData); // Set the RFID data
+
+      if (rfidData) {
+        const orderExists = await checkIsOrderIdExist(rfidData);
+        if (orderExists) {
+          await updateStatus(rfidData);
+        } else {
+          toast.error("Order ID does not exist. Status not updated.");
+        }
+      } else {
+        toast.error("RFID data is empty. Scanning failed.");
+      }
+
+      toast.success("RFID scanned successfully");
+    } catch (error) {
+      console.error("Error scanning RFID:", error);
+      toast.error("Error scanning RFID");
+    } finally {
+      setLoadingRFID(false); // End loading
+    }
+  };
+
   return (
     <>
-      <Button onClick={scanRfid} className="mt-4">
+      <Button onClick={scanRfidDummy} className="mt-4 w-full">
         Scan Outgoing RFID
       </Button>
 

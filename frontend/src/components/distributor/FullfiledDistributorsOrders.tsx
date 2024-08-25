@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 interface DistributorOrder {
   orderId: number;
@@ -171,7 +172,11 @@ export default function FulfilledDistributorsOrdersTable() {
                     <TableCell>
                       {formatDateTime(order.orderApprovedDate)}
                     </TableCell>
-                    <TableCell>{order.status}</TableCell>
+                    <TableCell>
+                    <Badge className="text-secondary dark:text-primary rounded-sm bg-green-700">
+                      {order.status}
+                    </Badge>
+                    </TableCell>
                   </TableRow>
                 ))
               )}

@@ -124,7 +124,12 @@ export default function CurrentOrderBatches() {
                         <TableCell>{order.orderId}</TableCell>
                         <TableCell>{order.medName}</TableCell>
                         <TableCell>
-                            {OrderStatus[order.status]}
+                            <Badge className={OrderStatus[order.status] == "Pending"
+                              ? "text-secondary dark:text-primary rounded-sm bg-yellow-700"
+                              : "text-secondary dark:text-primary rounded-sm bg-green-700"
+                            }>
+                              {OrderStatus[order.status]}
+                            </Badge>
                         </TableCell>
                         <TableCell>{order.quantity}</TableCell>
                       </TableRow>
