@@ -39,7 +39,7 @@ export const config = createConfig({
   ssr: true,
   storage: cookieStorage,
   sessionConfig: {
-    expirationTimeMs: 1000 * 60 * 60 * 24 * 180, // 180 days
+    expirationTimeMs:  1000 * 60 * 20 , // 180 days
   },
 });
 // [!endregion create-accounts-config]
