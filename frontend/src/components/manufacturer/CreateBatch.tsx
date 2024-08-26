@@ -40,7 +40,8 @@ export default function CreateBatchForm(props: any) {
 
   const generateQrCode = (batchId: string) => {
     // Construct the full URL for the user dashboard
-    const userDashboardUrl = `${window.location.origin}/consumerview/${batchId}`;
+   // const userDashboardUrl = `${window.location.origin}/consumerview/${batchId}`;
+    const userDashboardUrl = `https://pharma-chain-theta.vercel.app/consumerview/${batchId}`;
     
     // Set the QR code value to this URL
     setQrCode(userDashboardUrl);
@@ -180,7 +181,7 @@ export default function CreateBatchForm(props: any) {
             <Button
               variant="outline"
               type="button"
-              onClick={scanRfidDummy}
+              onClick={scanRfid}
               className="mb-2 self-end"
             >
               {loadingRFID ? <LoadingSpinner /> : "Scan RFID"}

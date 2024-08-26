@@ -181,7 +181,7 @@ export default function OutgoingRFID(props: any) {
 
   return (
     <>
-      <Button onClick={scanRfidDummy} className="mt-4 w-full">
+      <Button onClick={scanRfid} className="mt-4 w-full">
         Scan Outgoing RFID
       </Button>
 

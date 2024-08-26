@@ -186,7 +186,7 @@ export default function OutgoingRFID(props: any) {
         <CardTitle>RFID Scanning</CardTitle>
       </CardHeader>
       <CardContent>
-      <Button onClick={scanRfidDummy} className="w-full">
+      <Button onClick={scanRfid} className="w-full">
         Scan Incoming RFID
       </Button>
 
