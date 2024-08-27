@@ -143,33 +143,35 @@ export default function FulfilledProviderOrdersTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {fulfilledOrders.map(
-                ({
-                  orderId,
-                  medName,
-                  quantity,
-                  distributorName,
-                  distributorEmail,
-                  orderDate,
-                  orderApprovedDate,
-                  status,
-                }) => (
-                  <TableRow key={orderId}>
-                    <TableCell>{orderId}</TableCell>
-                    <TableCell>{medName}</TableCell>
-                    <TableCell>{quantity}</TableCell>
-                    <TableCell>{distributorName}</TableCell>
-                    <TableCell>{distributorEmail}</TableCell>
-                    <TableCell>{orderDate}</TableCell>
-                    <TableCell>{orderApprovedDate}</TableCell>
-                    <TableCell>
-                    <Badge className="text-secondary dark:text-primary rounded-sm bg-green-700">
-                      {status}
-                    </Badge>
-                    </TableCell>
-                  </TableRow>
-                ),
-              )}
+              {fulfilledOrders
+                .filter(order => order.status === OrderStatus.Reached) // Filter by 'Reached' status
+                .map(
+                  ({
+                    orderId,
+                    medName,
+                    quantity,
+                    distributorName,
+                    distributorEmail,
+                    orderDate,
+                    orderApprovedDate,
+                    status,
+                  }) => (
+                    <TableRow key={orderId}>
+                      <TableCell>{orderId}</TableCell>
+                      <TableCell>{medName}</TableCell>
+                      <TableCell>{quantity}</TableCell>
+                      <TableCell>{distributorName}</TableCell>
+                      <TableCell>{distributorEmail}</TableCell>
+                      <TableCell>{orderDate}</TableCell>
+                      <TableCell>{orderApprovedDate}</TableCell>
+                      <TableCell>
+                        <Badge className="text-secondary dark:text-primary rounded-sm bg-green-700">
+                          {status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ),
+                )}
             </TableBody>
           </Table>
         </CardContent>

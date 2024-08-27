@@ -99,6 +99,7 @@ export default function CurrentOrderBatches() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Order ID</TableHead>
+                  <TableHead>Batch ID</TableHead>
                   <TableHead>Medicine Name</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Quantity</TableHead>
@@ -122,6 +123,7 @@ export default function CurrentOrderBatches() {
                     createdOrders.map((order) => (
                       <TableRow key={order.orderId}>
                         <TableCell>{order.orderId}</TableCell>
+                        <TableCell>{order.batchId === 0 ? "Not Assigned" : order.batchId}</TableCell>
                         <TableCell>{order.medName}</TableCell>
                         <TableCell>
                             <Badge className={OrderStatus[order.status] == "Pending"

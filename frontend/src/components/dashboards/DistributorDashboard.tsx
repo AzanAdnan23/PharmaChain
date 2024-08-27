@@ -27,7 +27,7 @@ const DistributorDashboard = (props: any) => {
         <Tabs defaultValue="currentorders" className="flex h-full flex-col">
           <TabsList className="w-fit">
             <TabsTrigger value="currentorders">Current Orders</TabsTrigger>
-            <TabsTrigger value="fulfilledorders">Fulfilled Orders</TabsTrigger>
+            <TabsTrigger value="fulfilledorders">Fullfiled Orders Details</TabsTrigger>
             <TabsTrigger value="providerorders">Provider Orders</TabsTrigger>
             <TabsTrigger value="stock">Stock</TabsTrigger>
             {/* <TabsTrigger value="fulfilledproviderorders">Fulfilled Provider Orders</TabsTrigger> */}

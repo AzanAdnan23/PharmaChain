@@ -23,8 +23,8 @@ const ManufacturerDashboard = (props: any) => {
         <Tabs defaultValue="createdbatches" className="h-full flex flex-col">
           <TabsList className="w-fit">
             <TabsTrigger value="createdbatches">Created Batches</TabsTrigger>
-            <TabsTrigger value="currentorders">Current Orders</TabsTrigger>
-            <TabsTrigger value="ordersfulfilled">Orders Fulfilled</TabsTrigger>
+            <TabsTrigger value="currentorders">Distributor Orders</TabsTrigger>
+            <TabsTrigger value="ordersfulfilled">Fulfilled Orders Details</TabsTrigger>
           </TabsList>
           <TabsContent value="createdbatches" className="flex-grow">
             <CreatedBatchesTable />
